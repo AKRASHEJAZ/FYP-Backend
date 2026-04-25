@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace Data_Layer.Entities;
+
+[Index("Email", Name = "UQ__Users__A9D105343BDE9ABC", IsUnique = true)]
+public partial class User
+{
+    [Key]
+    public int Id { get; set; }
+
+    [StringLength(100)]
+    public string Name { get; set; } = null!;
+
+    [StringLength(150)]
+    public string Email { get; set; } = null!;
+
+    public string PasswordHash { get; set; } = null!;
+
+    public int RoleId { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime CreatedAt { get; set; }
+
+    public bool IsActive { get; set; }
+
+    [ForeignKey("RoleId")]
+    [InverseProperty("Users")]
+    public virtual Role Role { get; set; } = null!;
+}

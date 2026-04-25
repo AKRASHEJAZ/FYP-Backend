@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="API Layer/API Layer.csproj" />
-  <Project Path="Business Layer/Business Layer.csproj" />
-  <Project Path="Data Layer/Data Layer.csproj" />
+  <Project Path="API Layer/API.csproj" />
+  <Project Path="Business Layer/Business.csproj" />
+  <Project Path="Data Layer/Data.csproj" />
 </Solution>
