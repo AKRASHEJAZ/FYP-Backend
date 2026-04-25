@@ -1,24 +1,35 @@
+using API_Layer;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ======================
+// Services Registration
+// ======================
 
 builder.Services.AddControllers();
 
-//Add Swagger Support
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
+
+Services.RegisterServices(builder);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ======================
+// Middleware Pipeline
+// ======================
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
