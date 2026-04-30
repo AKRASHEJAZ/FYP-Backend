@@ -2,14 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Data_Layer.filters;
 using Business_Layer.DTOS;
+using Business_Layer.services;
+
+namespace Api_Layer.Controllers;
 
 [ApiController]
 [Route("api/user")]
-public class userController : Controller
+public class UserController : ControllerBase
 {
-    private readonly userService _userService;
+    private readonly UserService _userService;
 
-    public userController(userService userService)
+    public UserController(UserService userService)
     {
         _userService = userService;
     }
@@ -34,7 +37,7 @@ public class userController : Controller
     /// <returns></returns>
     [Authorize(Roles = "Admin")]
     [HttpPost("get")]
-    public IActionResult getAllUsers([FromBody] userFilters filters)
+    public IActionResult getAllUsers([FromBody] UserFilters filters)
     {
         var result = _userService.getAllUsers(filters);
         return StatusCode(result.Code, result);
@@ -47,7 +50,7 @@ public class userController : Controller
     /// <returns></returns>
     [Authorize(Roles = "Admin")]
     [HttpPost("add")]
-    public IActionResult addUser([FromBody] RegisterDTO user)
+    public IActionResult addUser([FromBody] RegisterDto user)
     {
         var result = _userService.addUser(user);
         return StatusCode(result.Code, result);
@@ -69,7 +72,7 @@ public class userController : Controller
     [Authorize(Roles = "Admin")]
     [HttpPut("update/{id}")]
 
-    public IActionResult updateUser([FromRoute] int id, [FromBody] UpdateUserDTO user)
+    public IActionResult updateUser([FromRoute] int id, [FromBody] UpdateUserDto user)
     {
         var result = _userService.updateUser(id, user);
         return StatusCode(result.Code, result);

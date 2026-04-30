@@ -1,7 +1,10 @@
 ﻿using Business_Layer.Common;
 using Business_Layer.DTOS;
+using Business_Layer.helpers;
 using Data_Layer.Entities;
 using Data_Layer.Interfaces;
+
+namespace Business_Layer.services;
 
 public class AuthService
 {
@@ -14,7 +17,7 @@ public class AuthService
         _tokenService = tokenService;
     }
 
-    public ApiResponse<string> Register(RegisterDTO dto)
+    public ApiResponse<string> Register(RegisterDto dto)
     {
         try
         {
@@ -43,11 +46,11 @@ public class AuthService
         }
         catch (Exception ex)
         {
-            return ApiResponse<string>.Fail("An error occurred during registration", 500);
+            return ApiResponse<string>.Fail($"An error occurred during registration {ex.Message}", 500);
         }
     }
 
-    public ApiResponse<string> Login(LoginDTO input)
+    public ApiResponse<string> Login(LoginDto input)
     {
         try
         {
@@ -69,7 +72,7 @@ public class AuthService
         }
         catch (Exception ex)
         {
-            return ApiResponse<string>.Fail("An error occurred during login", 500);
+            return ApiResponse<string>.Fail($"An error occurred during login {ex.Message}", 500);
         }
     }
 }

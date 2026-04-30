@@ -1,6 +1,6 @@
 ﻿namespace Data_Layer.filters
 {
-    public class userFilters
+    public class UserFilters
     {
         public List<int>? ID { get; set; }
         public string? Name { get; set; }

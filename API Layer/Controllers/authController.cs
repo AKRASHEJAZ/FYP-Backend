@@ -1,6 +1,9 @@
 ﻿
 using Business_Layer.DTOS;
+using Business_Layer.services;
 using Microsoft.AspNetCore.Mvc;
+
+namespace Api_Layer.Controllers;
 
 [ApiController]
 [Route("api/auth")]
@@ -19,7 +22,7 @@ public class AuthController : ControllerBase
     /// <param name="newUser"></param>
     /// <returns>Registered user JWT token || Error Message</returns>
     [HttpPost("register")]
-    public IActionResult Register(RegisterDTO newUser)
+    public IActionResult Register(RegisterDto newUser)
     {
         var result = _authService.Register(newUser);
         
@@ -32,7 +35,7 @@ public class AuthController : ControllerBase
     /// <param name="user"></param>
     /// <returns>User JWT token || Error Message</returns>
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginDTO user)
+    public IActionResult Login([FromBody] LoginDto user)
     {
         var result = _authService.Login(user);
 

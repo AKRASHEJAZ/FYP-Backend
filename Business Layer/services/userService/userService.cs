@@ -5,33 +5,36 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Data_Layer.filters;
 using Data_Layer.Entities;
+using Business_Layer.helpers;
 
-public class userService
+namespace Business_Layer.services;
+
+public class UserService
 {
     private readonly IUserRepository _userRepo;
 
     private readonly IHttpContextAccessor _context;
 
-    public userService(IUserRepository userRepo, IHttpContextAccessor context)
+    public UserService(IUserRepository userRepo, IHttpContextAccessor context)
     {
         _userRepo = userRepo;
         _context = context;
     }
 
-    public ApiResponse<userDTO> GetAuthUser()
+    public ApiResponse<UserDto> GetAuthUser()
     {
         try
         {
             var userId = _context.HttpContext?.User
             .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (userId == null) return ApiResponse<userDTO>.Fail("User not found", 404);
+            if (userId == null) return ApiResponse<UserDto>.Fail("User not found", 404);
 
             var user = _userRepo.GetById(int.Parse(userId));
 
-            if (user == null) return ApiResponse<userDTO>.Fail("User not found", 404);
+            if (user == null) return ApiResponse<UserDto>.Fail("User not found", 404);
 
-            return (ApiResponse<userDTO>.Success(new userDTO
+            return (ApiResponse<UserDto>.Success(new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -48,17 +51,21 @@ public class userService
         }
         catch (Exception e)
         {
-            return ApiResponse<userDTO>.Fail("An error occurred while retrieving the user: " + e.Message, 500);
+            return ApiResponse<UserDto>.Fail("An error occurred while retrieving the user: " + e.Message, 500);
         }
 
     }
 
-    public ApiResponse<List<userDTO>> getAllUsers(userFilters filters)
+    public ApiResponse<List<UserDto>> getAllUsers(UserFilters filters)
     {
         try
         {
             var users = _userRepo.GetAll(filters);
-            var userDTOs = users.Select(user => new userDTO
+            
+            if(users == null || users.Count == 0)
+                return ApiResponse<List<UserDto>>.Fail("No users found matching the provided filters", 404);
+
+            var userDTOs = users.Select(user => new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -68,15 +75,15 @@ public class userService
                 Role = user.Role.Name,
                 RoleId = user.RoleId,
             }).ToList();
-            return ApiResponse<List<userDTO>>.Success(userDTOs, "Users retrieved successfully", 200);
+            return ApiResponse<List<UserDto>>.Success(userDTOs, "Users retrieved successfully", 200);
         }
         catch (Exception e)
         {
-            return ApiResponse<List<userDTO>>.Fail("An error occurred while retrieving users: " + e.Message, 500);
+            return ApiResponse<List<UserDto>>.Fail("An error occurred while retrieving users: " + e.Message, 500);
         }
     }
 
-    public ApiResponse<string?> addUser(RegisterDTO user)
+    public ApiResponse<string?> addUser(RegisterDto user)
     {
         try
         {
@@ -103,18 +110,18 @@ public class userService
         }
     }
 
-    public ApiResponse<userDTO> deleteUser(int id)
+    public ApiResponse<UserDto> deleteUser(int id)
     {
         try
         {
             var currentUser = this.GetAuthUser();
             if(id == currentUser.Data?.Id)
-                return ApiResponse<userDTO>.Fail("You cannot delete your own account", 400);
+                return ApiResponse<UserDto>.Fail("You cannot delete your own account", 400);
 
             var user = _userRepo.Delete(id);
 
             if (user != null)
-                return ApiResponse<userDTO>.Success(new userDTO
+                return ApiResponse<UserDto>.Success(new UserDto
                 {
                     Id = user.Id,
                     Name = user.Name,
@@ -129,32 +136,39 @@ public class userService
                 );
 
             else
-                return ApiResponse<userDTO>.Fail("Failed to delete user OR user not found", 400);
+                return ApiResponse<UserDto>.Fail("Failed to delete user OR user not found", 400);
         }
         catch (Exception e)
         {
-            return ApiResponse<userDTO>.Fail("An error occurred while deleting the user: " + e.Message, 500);
+            return ApiResponse<UserDto>.Fail("An error occurred while deleting the user: " + e.Message, 500);
         }
     }
 
-    public ApiResponse<userDTO> updateUser(int id, UpdateUserDTO updatedUser)
+    public ApiResponse<UserDto> updateUser(int id, UpdateUserDto updatedUser)
     {
         try
         {
             if (updatedUser != null)
             {
 
-                var newUser = new User
-                {
-                    Name = updatedUser.Name,
-                    Email = updatedUser.Email,
-                    IsActive = updatedUser.IsActive ?? true,
-                    RoleId = updatedUser.RoleId ?? 0,
-                };
+                var newUser = new User();
+
+                if (updatedUser.Name != null)
+                    newUser.Name = updatedUser.Name;
+
+                if (updatedUser.Email != null)
+                    newUser.Email = updatedUser.Email;
+
+                if (updatedUser.IsActive.HasValue)
+                    newUser.IsActive = updatedUser.IsActive.Value;
+
+                if (updatedUser.RoleId.HasValue)
+                    newUser.RoleId = updatedUser.RoleId.Value;
+
                 var user = _userRepo.Update(id, newUser);
 
                 if (user != null)
-                    return ApiResponse<userDTO>.Success(new userDTO
+                    return ApiResponse<UserDto>.Success(new UserDto
                     {
                         Id = user.Id,
                         Name = user.Name,
@@ -168,15 +182,15 @@ public class userService
                     200
                     );
                 else
-                    return ApiResponse<userDTO>.Fail("Failed to update user OR user not found", 400);
+                    return ApiResponse<UserDto>.Fail("Failed to update user OR user not found", 400);
             }
             else {
-                return ApiResponse<userDTO>.Fail("Invalid user data", 400);
+                return ApiResponse<UserDto>.Fail("Invalid user data", 400);
             }
         }
         catch (Exception e)
         {
-            return ApiResponse<userDTO>.Fail("An error occurred while updating the user: " + e.Message, 500);
+            return ApiResponse<UserDto>.Fail("An error occurred while updating the user: " + e.Message, 500);
         }
     }
 }
