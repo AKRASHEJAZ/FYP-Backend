@@ -1,5 +1,5 @@
 ﻿
-using Business_Layer.DTOS.Auth;
+using Business_Layer.DTOS;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]

@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace Business_Layer.DTOS.Auth
+namespace Business_Layer.DTOS
 {
     public class RegisterDTO
     {
