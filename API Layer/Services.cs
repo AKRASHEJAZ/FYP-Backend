@@ -1,4 +1,6 @@
-﻿using Data_Layer.Data;
+﻿using Business_Layer.helpers;
+using Business_Layer.services;
+using Data_Layer.Data;
 using Data_Layer.Interfaces;
 using Data_Layer.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,7 +47,7 @@ namespace API_Layer
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<userService>();
+            builder.Services.AddScoped<UserService>();
         }
     }
 }
