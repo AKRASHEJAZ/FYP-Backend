@@ -24,5 +24,11 @@ namespace Data_Layer.Repositories
             _context.Users.Add(user);
             _context.SaveChanges();
         }
+
+
+        User? IUserRepository.GetById(int id)
+        {
+            return _context.Users.Include(u => u.Role).FirstOrDefault(x =>x.Id == id);
+        }
     }
 }
