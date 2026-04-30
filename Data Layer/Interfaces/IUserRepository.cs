@@ -10,7 +10,7 @@ namespace Data_Layer.Interfaces
         bool Add(User user);
 
         User? GetById(int id);
-        List<User>? GetAll(userFilters filter);
+        List<User>? GetAll(UserFilters filter);
 
         User? Delete(int id);
 

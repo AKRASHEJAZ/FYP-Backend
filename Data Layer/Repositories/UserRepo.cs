@@ -39,7 +39,7 @@ namespace Data_Layer.Repositories
             }
         }
 
-        List<User>? IUserRepository.GetAll(userFilters filter)
+        List<User>? IUserRepository.GetAll(UserFilters filter)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace Data_Layer.Repositories
             }
         }
 
-        public User? Update(int id, User newUser)
+        public User? Update(int id, User newuser)
         {
             try
             {
@@ -112,17 +112,17 @@ namespace Data_Layer.Repositories
                 if (user == null)
                     return null;
 
-                if (!string.IsNullOrEmpty(newUser.Name))
-                    user.Name = newUser.Name;
+                if (!string.IsNullOrEmpty(newuser.Name))
+                    user.Name = newuser.Name;
 
-                if (!string.IsNullOrEmpty(newUser.Email))
-                    user.Email = newUser.Email;
+                if (!string.IsNullOrEmpty(newuser.Email))
+                    user.Email = newuser.Email;
 
-                if (newUser.RoleId != 0)
-                    user.RoleId = newUser.RoleId;
+                if (newuser.RoleId != 0)
+                    user.RoleId = newuser.RoleId;
 
-                if (newUser.IsActive != user.IsActive)
-                    user.IsActive = newUser.IsActive;
+                if (newuser.IsActive != user.IsActive)
+                    user.IsActive = newuser.IsActive;
 
                 _context.SaveChanges();
 

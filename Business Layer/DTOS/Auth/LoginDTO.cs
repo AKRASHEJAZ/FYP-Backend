@@ -4,15 +4,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Business_Layer.DTOS
 {
-    public class LoginDTO
+    public class LoginDto
     {
-        [Required]
+        
         [EmailAddress]
         [StringLength(150)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
         [MinLength(6)]
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

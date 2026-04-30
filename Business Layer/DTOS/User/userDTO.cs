@@ -2,7 +2,7 @@
 
 namespace Business_Layer.DTOS
 {
-    public class userDTO
+    public class userDto
     {
         public int? Id { get; set; }
 

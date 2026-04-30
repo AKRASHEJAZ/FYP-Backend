@@ -5,6 +5,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+
+namespace Business_Layer.helpers;
+
 public class TokenService
 {
     private readonly IConfiguration _config;
@@ -24,7 +27,7 @@ public class TokenService
         };
 
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "")
         );
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

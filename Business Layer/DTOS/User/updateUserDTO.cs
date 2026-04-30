@@ -2,7 +2,7 @@
 
 namespace Business_Layer.DTOS;
 
-public class UpdateUserDTO
+public class UpdateUserDto
 {
     public string? Name { get; set; }
     public string? Email { get; set; }
@@ -10,7 +10,7 @@ public class UpdateUserDTO
     public int? RoleId { get; set; }
 }
 
-public class ChangePasswordDTO
+public class ChangePasswordDto
 {
     [Required]
     public string CurrentPassword { get; set; } = null!;

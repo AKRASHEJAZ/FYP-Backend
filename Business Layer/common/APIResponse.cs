@@ -3,8 +3,8 @@
     public class ApiResponse<T>
     {
         public int Code { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
+        public required string Message { get; set; }
+        public T ? Data { get; set; }
 
         public static ApiResponse<T> Success(T data, string message = "Success", int code = 200)
         {
@@ -21,8 +21,7 @@
             return new ApiResponse<T>
             {
                 Code = code,
-                Message = message,
-                Data = default
+                Message = message
             };
         }
     }
