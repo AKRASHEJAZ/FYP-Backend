@@ -2,4 +2,5 @@
   <Project Path="API Layer/API.csproj" />
   <Project Path="Business Layer/Business.csproj" />
   <Project Path="Data Layer/Data.csproj" />
+  <Project Path="TestCases/TestCases.csproj" Id="06a4394f-4ce2-49f3-85f6-5fb9897ee7c3" />
 </Solution>
