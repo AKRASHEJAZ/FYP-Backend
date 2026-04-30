@@ -1,5 +1,5 @@
-﻿using Business_Layer.DTOS.Auth;
-using Microsoft.AspNetCore.Authorization;
+﻿
+using Business_Layer.DTOS.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -38,5 +38,4 @@ public class AuthController : ControllerBase
 
         return StatusCode(result.Code, result);
     }
-
 }

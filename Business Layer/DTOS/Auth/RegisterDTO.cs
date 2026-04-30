@@ -1,4 +1,4 @@
-﻿using Data_Layer.Entities;
+﻿
 using System.ComponentModel.DataAnnotations;
 
 namespace Business_Layer.DTOS.Auth

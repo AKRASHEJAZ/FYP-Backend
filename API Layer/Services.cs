@@ -44,7 +44,8 @@ namespace API_Layer
             builder.Services.AddScoped<IUserRepository, UserRepo>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
-
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<userService>();
         }
     }
 }
