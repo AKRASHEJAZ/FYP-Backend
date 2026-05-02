@@ -174,67 +174,60 @@ public class UserService
     {
         try
         {
-            if (updatedUser != null)
-            {
-
-                var authResult = this.GetAuthUser();
-
-                if (authResult.Code != 200 || authResult.Data == null)
-                    return ApiResponse<UserDto>.Fail("Unauthorized", 401);
-
-                var authUser = authResult.Data;
-
-                var newUser = new User();
-
-                if (updatedUser.Name != null)
-                    newUser.Name = updatedUser.Name;
-
-                if (updatedUser.Email != null)
-                    newUser.Email = updatedUser.Email;
-
-                if (updatedUser.IsActive.HasValue)
-                    newUser.IsActive = updatedUser.IsActive.Value;
-
-                if (updatedUser.RoleId.HasValue)
-                    newUser.RoleId = updatedUser.RoleId.Value;
-
-                var user = _userRepo.Update(id, newUser);
-
-                if (user != null)
-                {
-                    _userRepo.CreateUserAuditLog(new UserAuditLog
-                    {
-                        UserId = user.Id,
-                        Action = "Updated",
-                        Details = "User Updated",
-                        PerformedBy = authUser?.Id!
-
-                    });
-
-                    return ApiResponse<UserDto>.Success(new UserDto
-                    {
-                        Id = user.Id,
-                        Name = user.Name,
-                        Email = user.Email,
-                        CreatedAt = user.CreatedAt,
-                        IsActive = user.IsActive,
-                        Role = user.Role.Name,
-                        RoleId = user.RoleId,
-                    },
-                   "User updated successfully",
-                   200
-                   );
-                }
-                else
-                    return ApiResponse<UserDto>.Fail("Failed to update user OR user not found", 400);
-            }
-            else {
+            if (updatedUser == null)
                 return ApiResponse<UserDto>.Fail("Invalid user data", 400);
-            }
+
+            var authResult = GetAuthUser();
+
+            if (authResult.Code != 200 || authResult.Data == null)
+                return ApiResponse<UserDto>.Fail("Unauthorized", 401);
+
+            var authUser = authResult.Data;
+
+            var newUser = new User();
+
+            if (updatedUser.Name != null)
+                newUser.Name = updatedUser.Name;
+
+            if (updatedUser.Email != null)
+                newUser.Email = updatedUser.Email;
+
+            if (updatedUser.IsActive.HasValue)
+                newUser.IsActive = updatedUser.IsActive.Value;
+
+            if (updatedUser.RoleId.HasValue)
+                newUser.RoleId = updatedUser.RoleId.Value;
+
+            var user = _userRepo.Update(id, newUser);
+
+            if (user == null)
+                return ApiResponse<UserDto>.Fail("Failed to update user OR user not found", 400);
+
+            _userRepo.CreateUserAuditLog(new UserAuditLog
+            {
+                UserId = user.Id,
+                Action = "Updated",
+                Details = "User Updated",
+                PerformedBy = authUser?.Id!
+            });
+
+            return ApiResponse<UserDto>.Success(new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive,
+                Role = user.Role.Name,
+                RoleId = user.RoleId,
+            },
+            "User updated successfully",
+            200);
         }
         catch (Exception e)
         {
-            return ApiResponse<UserDto>.Fail("An error occurred while updating the user: " + e.Message, 500);
+            return ApiResponse<UserDto>.Fail(
+                "An error occurred while updating the user: " + e.Message, 500);
         }
     }
 
@@ -245,16 +238,8 @@ public class UserService
      */
     public void AddRole(string roleName)
     {
-        try
-        {
-            var role = new Role { Name = roleName };
-            _userRepo.AddRole(role);
-        }
-        catch
-        {
-            return;
-        }
-
+        var role = new Role { Name = roleName };
+        _userRepo.AddRole(role);
     }
 
     public bool UserExists(string user)
