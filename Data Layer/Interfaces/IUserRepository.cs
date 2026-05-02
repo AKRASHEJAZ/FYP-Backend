@@ -18,5 +18,6 @@ namespace Data_Layer.Interfaces
         Role? AddRole(Role role);
         bool UserExists(string email);
         bool RoleExists(string roleName);
+        void CreateUserAuditLog(UserAuditLog log);
     }
 }

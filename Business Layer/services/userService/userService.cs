@@ -25,6 +25,7 @@ public class UserService
     {
         try
         {
+            
             var userId = _context.HttpContext?.User
             .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -53,7 +54,6 @@ public class UserService
         {
             return ApiResponse<UserDto>.Fail("An error occurred while retrieving the user: " + e.Message, 500);
         }
-
     }
 
     public ApiResponse<List<UserDto>> getAllUsers(UserFilters filters)
@@ -87,6 +87,12 @@ public class UserService
     {
         try
         {
+            var authResult = this.GetAuthUser();
+
+            if (authResult.Code != 200 || authResult.Data == null)
+                return ApiResponse<string?>.Fail("Unauthorized", 401);
+
+            var authUser = authResult.Data;
 
             var newUser = new User
             {
@@ -99,7 +105,19 @@ public class UserService
             };
 
             if (_userRepo.Add(newUser))
+            {
+
+                _userRepo.CreateUserAuditLog(new UserAuditLog
+                {
+                    UserId = newUser.Id,
+                    Action = "Created",
+                    Details = "User Created",
+                    PerformedBy = authUser.Id!
+
+                });
                 return ApiResponse<string?>.Success(null, "User added successfully", 201);
+            }
+   
             else
                 return ApiResponse<string?>.Fail("Failed to add user", 400);
 
@@ -114,13 +132,20 @@ public class UserService
     {
         try
         {
-            var currentUser = this.GetAuthUser();
-            if(id == currentUser.Data?.Id)
+            var authResult = this.GetAuthUser();
+
+            if (authResult.Code != 200 || authResult.Data == null)
+                return ApiResponse<UserDto>.Fail("Unauthorized", 401);
+
+            var authUser = authResult.Data;
+
+            if(id == authUser?.Id)
                 return ApiResponse<UserDto>.Fail("You cannot delete your own account", 400);
 
             var user = _userRepo.Delete(id);
 
             if (user != null)
+            {
                 return ApiResponse<UserDto>.Success(new UserDto
                 {
                     Id = user.Id,
@@ -134,6 +159,7 @@ public class UserService
                 "User deleted successfully",
                 200
                 );
+            }
 
             else
                 return ApiResponse<UserDto>.Fail("Failed to delete user OR user not found", 400);
@@ -150,6 +176,13 @@ public class UserService
         {
             if (updatedUser != null)
             {
+
+                var authResult = this.GetAuthUser();
+
+                if (authResult.Code != 200 || authResult.Data == null)
+                    return ApiResponse<UserDto>.Fail("Unauthorized", 401);
+
+                var authUser = authResult.Data;
 
                 var newUser = new User();
 
@@ -168,6 +201,16 @@ public class UserService
                 var user = _userRepo.Update(id, newUser);
 
                 if (user != null)
+                {
+                    _userRepo.CreateUserAuditLog(new UserAuditLog
+                    {
+                        UserId = user.Id,
+                        Action = "Updated",
+                        Details = "User Updated",
+                        PerformedBy = authUser?.Id!
+
+                    });
+
                     return ApiResponse<UserDto>.Success(new UserDto
                     {
                         Id = user.Id,
@@ -178,9 +221,10 @@ public class UserService
                         Role = user.Role.Name,
                         RoleId = user.RoleId,
                     },
-                    "User updated successfully",
-                    200
-                    );
+                   "User updated successfully",
+                   200
+                   );
+                }
                 else
                     return ApiResponse<UserDto>.Fail("Failed to update user OR user not found", 400);
             }

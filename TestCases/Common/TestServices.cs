@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TestCases.Common.Seeders;
+using Microsoft.Extensions.Configuration;
 
+namespace TestCases.Common;
 public static class TestServices
 {
     public static ServiceProvider Create()
@@ -16,10 +18,16 @@ public static class TestServices
 
         var services = new ServiceCollection();
 
-        services.RemoveAll<DbContextOptions<AppDbContext>>();
-        services.RemoveAll<AppDbContext>();
+        var config = new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Jwt:Key"] = "test-secret-key",
+            ["Jwt:Issuer"] = "test",
+            ["Jwt:Audience"] = "test"
+        })
+        .Build();
 
-        // ONLY InMemory DB (NO SQL SERVER ANYWHERE)
+        services.AddSingleton<IConfiguration>(config);
         services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 

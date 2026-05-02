@@ -30,4 +30,10 @@ public partial class User
     [ForeignKey("RoleId")]
     [InverseProperty("Users")]
     public virtual Role Role { get; set; } = null!;
+
+    [InverseProperty("PerformedByNavigation")]
+    public virtual ICollection<UserAuditLog> UserAuditLogPerformedByNavigations { get; set; } = new List<UserAuditLog>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserAuditLog> UserAuditLogUsers { get; set; } = new List<UserAuditLog>();
 }

@@ -20,8 +20,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    { }
+    public virtual DbSet<UserAuditLog> UserAuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Role>(entity =>
@@ -39,6 +39,17 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Users_Roles");
+        });
+
+        modelBuilder.Entity<UserAuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserAudi__3214EC077EFDA346");
+
+            entity.Property(e => e.PerformedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.PerformedByNavigation).WithMany(p => p.UserAuditLogPerformedByNavigations).HasConstraintName("FK_UserAuditLogs_PerformedBy");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserAuditLogUsers).HasConstraintName("FK_UserAuditLogs_User");
         });
 
         OnModelCreatingPartial(modelBuilder);
