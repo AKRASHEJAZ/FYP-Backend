@@ -15,5 +15,6 @@ namespace Data_Layer.Interfaces
         User? Delete(int id);
 
         User? Update(int id, User newuser);
+        Role? AddRole(Role role);
     }
 }

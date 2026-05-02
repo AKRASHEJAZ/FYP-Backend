@@ -179,5 +179,19 @@ public class userService
             return ApiResponse<userDTO>.Fail("An error occurred while updating the user: " + e.Message, 500);
         }
     }
+
+    void AddRole(string roleName)
+    {
+        try
+        {
+            var role = new Role { Name = roleName };
+            _userRepo.AddRole(role);
+        }
+        catch
+        {
+            return;
+        }
+
+    }
 }
 
