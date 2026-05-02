@@ -194,7 +194,12 @@ public class UserService
         }
     }
 
-    void AddRole(string roleName)
+    /*
+     * THESE FOLLOWING METHODS ARE NOT EXPOSED TO THE CONTROLLER, 
+     * THEY ARE USED INTERNALLY BY THE SERVICE TO CHECK FOR EXISTENCE OF USERS AND ROLES AND TO ADD ROLES
+     * USEFUL FOR SEEDING THE DATABASE WITH ROLES AND CHECKING FOR EXISTENCE OF USERS AND ROLES BEFORE PERFORMING CERTAIN ACTIONS
+     */
+    public void AddRole(string roleName)
     {
         try
         {
@@ -206,6 +211,16 @@ public class UserService
             return;
         }
 
+    }
+
+    public bool UserExists(string user)
+    {
+        return _userRepo.UserExists(user);
+    }
+
+    public bool RoleExists(string role)
+    {
+        return _userRepo.RoleExists(role);
     }
 }
 

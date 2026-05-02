@@ -16,5 +16,7 @@ namespace Data_Layer.Interfaces
 
         User? Update(int id, User newuser);
         Role? AddRole(Role role);
+        bool UserExists(string email);
+        bool RoleExists(string roleName);
     }
 }

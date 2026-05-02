@@ -146,5 +146,15 @@ namespace Data_Layer.Repositories
                 return null;
             }
         }
+
+        bool IUserRepository.UserExists(string email)
+        {
+            return _context.Users.Any(u => u.Email == email);
+        }
+
+        bool IUserRepository.RoleExists(string roleName)
+        {
+            return _context.Roles.Any(r => r.Name == roleName);
+        }
     }
 }
