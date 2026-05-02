@@ -16,8 +16,16 @@ namespace API_Layer
         public static void RegisterServices(WebApplicationBuilder builder)
         {
             // DbContext
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            if (builder.Environment.IsEnvironment("Testing"))
+            {
+                builder.Services.AddDbContext<AppDbContext>(options =>
+                    options.UseInMemoryDatabase("TestDb"));
+            }
+            else
+            {
+                builder.Services.AddDbContext<AppDbContext>(options =>
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            }
 
             //JWT Auth
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -35,3 +35,23 @@ CREATE TABLE Users (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
+
+CREATE TABLE UserAuditLogs (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+
+    UserId INT NOT NULL,
+    Action NVARCHAR(50) NOT NULL,
+
+    PerformedBy INT NULL,
+    PerformedAt DATETIME NOT NULL DEFAULT GETDATE(),
+
+    Details NVARCHAR(MAX) NULL,
+
+    CONSTRAINT FK_UserAuditLogs_User
+        FOREIGN KEY (UserId) REFERENCES Users(Id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT FK_UserAuditLogs_PerformedBy
+        FOREIGN KEY (PerformedBy) REFERENCES Users(Id)
+        -- NO ACTION (default)
+);
