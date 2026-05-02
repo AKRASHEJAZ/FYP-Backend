@@ -133,5 +133,18 @@ namespace Data_Layer.Repositories
                 return null;
             }
         }
+        Role? IUserRepository.AddRole(Role role)
+        {
+            try
+            {
+                _context.Roles.Add(role);
+                _context.SaveChanges();
+                return role;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }
