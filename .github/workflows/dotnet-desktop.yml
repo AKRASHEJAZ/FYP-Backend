@@ -42,6 +42,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AKRASHEJAZ_FYP-Backend" /o:"akrashejaz" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AKRASHEJAZ_FYP-Backend" /o:"akrashejaz" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.cobertura.reportsPaths="**/TestResults/**/coverage.cobertura.xml"
           dotnet build
+          dotnet test "TestCases/TestCases.csproj" --collect:"XPlat Code Coverage" --results-directory "TestResults" --no-build
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
