@@ -52,10 +52,14 @@ namespace API_Layer
 
             // Repositories + Services
             builder.Services.AddScoped<IUserRepository, UserRepo>();
+            builder.Services.AddScoped<IProductRepository, ProductRepo>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
-            builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<UnitService>();
+            builder.Services.AddScoped<ProductService>();
+            builder.Services.AddScoped<CategoryService>();
+            builder.Services.AddHttpContextAccessor();
         }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TestCases.Common.Seeders;
 using TestCases.Common;
 
-namespace TestCases.tests;
+namespace TestCases.Tests;
 
 public class UserTests
 {
