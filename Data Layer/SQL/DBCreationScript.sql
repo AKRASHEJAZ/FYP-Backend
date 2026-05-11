@@ -55,3 +55,75 @@ CREATE TABLE UserAuditLogs (
         FOREIGN KEY (PerformedBy) REFERENCES Users(Id)
         -- NO ACTION (default)
 );
+
+-- =========================================
+-- Categories Table
+-- =========================================
+CREATE TABLE Categories
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    Name NVARCHAR(100) NOT NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+
+-- =========================================
+-- Units Table
+-- =========================================
+CREATE TABLE Units
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    Name NVARCHAR(50) NOT NULL,
+
+    Symbol NVARCHAR(20) NOT NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+
+-- =========================================
+-- Products Table
+-- =========================================
+CREATE TABLE Products
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    Name NVARCHAR(150) NOT NULL,
+
+    CategoryId INT NOT NULL,
+
+    UnitId INT NOT NULL,
+
+    InternalCode NVARCHAR(50) NULL,
+
+    IsActive BIT NOT NULL DEFAULT 1,
+
+    IsSellable BIT NOT NULL DEFAULT 1,
+
+    IsPurchasable BIT NOT NULL DEFAULT 1,
+
+    DoesExpire BIT NOT NULL DEFAULT 0,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_Products_Category
+        FOREIGN KEY (CategoryId)
+        REFERENCES Categories(Id)
+        ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Products_Unit
+        FOREIGN KEY (UnitId)
+        REFERENCES Units(Id)
+        ON DELETE NO ACTION
+);
+
+-- =========================================
+-- Useful Indexes
+-- =========================================
+
+CREATE INDEX IX_Products_CategoryId
+ON Products(CategoryId);
+
+CREATE INDEX IX_Products_UnitId
+ON Products(UnitId);

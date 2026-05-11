@@ -33,11 +33,15 @@ public static class TestServices
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepo>();
+        services.AddScoped<IProductRepository, ProductRepo>();
 
         // Services
         services.AddScoped<UserService>();
         services.AddScoped<AuthService>();
         services.AddScoped<TokenService>();
+        services.AddScoped<UnitService>();
+        services.AddScoped<ProductService>();
+        services.AddScoped<CategoryService>();
 
         // Seeder
         services.AddScoped<AuthUserSeeder>();

@@ -16,7 +16,13 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Category> Categories { get; set; }
+
+    public virtual DbSet<Product> Products { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<Unit> Units { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -24,9 +30,41 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC07DE3A77DD");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Products__3214EC07F9F2BC5C");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsPurchasable).HasDefaultValue(true);
+            entity.Property(e => e.IsSellable).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Products_Category");
+
+            entity.HasOne(d => d.Unit).WithMany(p => p.Products)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Products_Unit");
+        });
+
         modelBuilder.Entity<Role>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07F06666D7");
+        });
+
+        modelBuilder.Entity<Unit>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Units__3214EC07BFAFBE72");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
         });
 
         modelBuilder.Entity<User>(entity =>
