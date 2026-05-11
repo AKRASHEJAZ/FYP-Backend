@@ -46,6 +46,11 @@ public class UnitService
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(unit.Name))
+            {
+                return ApiResponse<string>.Fail("Unit name cannot be empty");
+            }
+
             var data = new Unit {
                 Name = unit.Name,
                 Symbol = unit.Symbol,

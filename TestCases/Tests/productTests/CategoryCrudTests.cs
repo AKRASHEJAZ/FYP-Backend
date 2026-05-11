@@ -71,5 +71,30 @@ public class CategoryCrudTests
             db.Database.EnsureDeleted();
         }
     }
+
+    [Fact]
+    public async Task Category_Add_With_Empty_Name_Returns_Validation_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var categoryService = scope.ServiceProvider.GetRequiredService<CategoryService>();
+
+        try
+        {
+            var emptyName = await categoryService.AddCategoryAsync(new UpdateCategoryDto { Name = "" });
+            Assert.Equal(400, emptyName.Code);
+            Assert.Equal("Category name cannot be empty", emptyName.Message);
+
+            var whitespaceName = await categoryService.AddCategoryAsync(new UpdateCategoryDto { Name = "   " });
+            Assert.Equal(400, whitespaceName.Code);
+            Assert.Equal("Category name cannot be empty", whitespaceName.Message);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
 }
 

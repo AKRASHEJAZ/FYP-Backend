@@ -88,4 +88,39 @@ public class ProductCrudTests
             db.Database.EnsureDeleted();
         }
     }
+
+    [Fact]
+    public async Task Product_Add_With_Empty_Name_Returns_Validation_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var productService = scope.ServiceProvider.GetRequiredService<ProductService>();
+
+        try
+        {
+            var emptyName = await productService.Add(new UpdateProductDto
+            {
+                Name = "",
+                CategoryId = 1,
+                UnitId = 1
+            });
+            Assert.Equal(400, emptyName.Code);
+            Assert.Equal("Product Must Have a Name", emptyName.Message);
+
+            var whitespaceName = await productService.Add(new UpdateProductDto
+            {
+                Name = " \t ",
+                CategoryId = 1,
+                UnitId = 1
+            });
+            Assert.Equal(400, whitespaceName.Code);
+            Assert.Equal("Product Must Have a Name", whitespaceName.Message);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
 }

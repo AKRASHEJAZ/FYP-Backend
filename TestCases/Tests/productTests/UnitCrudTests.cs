@@ -74,5 +74,30 @@ public class UnitCrudTests
             db.Database.EnsureDeleted();
         }
     }
+
+    [Fact]
+    public async Task Unit_Add_With_Empty_Name_Returns_Validation_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var unitService = scope.ServiceProvider.GetRequiredService<UnitService>();
+
+        try
+        {
+            var emptyName = await unitService.Add(new UpdateUnitDto { Name = "", Symbol = "kg" });
+            Assert.Equal(400, emptyName.Code);
+            Assert.Equal("Unit name cannot be empty", emptyName.Message);
+
+            var whitespaceName = await unitService.Add(new UpdateUnitDto { Name = "   ", Symbol = "kg" });
+            Assert.Equal(400, whitespaceName.Code);
+            Assert.Equal("Unit name cannot be empty", whitespaceName.Message);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
 }
 
