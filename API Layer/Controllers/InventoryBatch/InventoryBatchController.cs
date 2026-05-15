@@ -19,6 +19,7 @@ public class InventoryBatchController : Controller
         _service = service;
     }
 
+    [Authorize(Roles = "Admin, Cashier")]
     [HttpPost("get")]
     public async Task<IActionResult> GetInventoryBatch([FromBody] InventoryBatchFilters filters)
     {

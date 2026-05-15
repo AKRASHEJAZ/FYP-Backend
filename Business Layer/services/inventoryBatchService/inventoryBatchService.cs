@@ -58,15 +58,10 @@ public class InventoryBatchService
                 return ApiResponse<InventoryBatchDto>
                     .Fail("Product not found for the given ProductId.");
 
-            var cleanName = Regex.Replace(product.Name.ToLower(), @"[^a-z0-9]", "");
-
-            if (cleanName.Length > 6)
-                cleanName = cleanName[..6];
-
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             var random = Random.Shared.Next(10, 99);
 
-            var batchCode = $"{cleanName}-{timestamp}-{random}";
+            var batchCode = $"{product.Name?.ToLower() ?? "unknown"}-{timestamp}-{random}";
 
             var batch = new InventoryBatch
             {
