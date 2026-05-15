@@ -50,6 +50,17 @@ namespace API_Layer
 
             builder.Services.AddAuthorization();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
             // Repositories + Services
             builder.Services.AddScoped<IUserRepository, UserRepo>();
             builder.Services.AddScoped<IProductRepository, ProductRepo>();

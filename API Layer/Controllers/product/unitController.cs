@@ -17,7 +17,7 @@ public class UnitController : Controller
         _service = service;
     }
 
-    [Authorize(Roles ="Admin, cashier")]
+    [Authorize(Roles ="Admin, Cashier")]
     [HttpPost("Get")]
     async public Task<IActionResult> GetAll([FromBody] UnitFilters filters)
     {
