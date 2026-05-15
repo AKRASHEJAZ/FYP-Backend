@@ -34,6 +34,7 @@ public static class TestServices
         // Repositories
         services.AddScoped<IUserRepository, UserRepo>();
         services.AddScoped<IProductRepository, ProductRepo>();
+        services.AddScoped<IInventoryBatchRepository, InventoryBatchRepo>();
 
         // Services
         services.AddScoped<UserService>();
@@ -42,6 +43,7 @@ public static class TestServices
         services.AddScoped<UnitService>();
         services.AddScoped<ProductService>();
         services.AddScoped<CategoryService>();
+        services.AddScoped<InventoryBatchService>();
 
         // Seeder
         services.AddScoped<AuthUserSeeder>();

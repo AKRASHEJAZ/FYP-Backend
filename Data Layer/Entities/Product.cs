@@ -37,6 +37,9 @@ public partial class Product
     [InverseProperty("Products")]
     public virtual Category Category { get; set; } = null!;
 
+    [InverseProperty("Product")]
+    public virtual ICollection<InventoryBatch> InventoryBatches { get; set; } = new List<InventoryBatch>();
+
     [ForeignKey("UnitId")]
     [InverseProperty("Products")]
     public virtual Unit Unit { get; set; } = null!;
