@@ -3,6 +3,7 @@ using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Data_Layer.Repositories;
 
@@ -32,8 +33,11 @@ public class ProductRepo : IProductRepository
 
         if (filters.Name?.Count > 0)
         {
-            query = query.Where(c =>
-                filters.Name.Any(f => c.Name.StartsWith(f)));
+            foreach (var name in filters.Name)
+            {
+                var temp = name;
+                query = query.Where(c => c.Name.StartsWith(temp));
+            }
         }
 
         return await query
@@ -83,7 +87,11 @@ public class ProductRepo : IProductRepository
 
         if (filters.Name?.Count > 0)
         {
-            query = query.Where(u => filters.Name.Contains(u.Name));
+            foreach (var name in filters.Name)
+            {
+                var temp = name;
+                query = query.Where(c => c.Name.StartsWith(temp));
+            }
         }
 
         if (filters.Symbol?.Count > 0)
@@ -140,7 +148,11 @@ public class ProductRepo : IProductRepository
         }
         if (filters.Name?.Count > 0)
         {
-            query = query.Where(p => filters.Name.Contains(p.Name));
+            foreach (var name in filters.Name)
+            {
+                var temp = name;
+                query = query.Where(c => c.Name.StartsWith(temp));
+            }
         }
         if (filters.CategoryId?.Count > 0)
         {
