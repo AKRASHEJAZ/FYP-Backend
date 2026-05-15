@@ -25,6 +25,7 @@ public class InventoryBatchDto
         Product = b.Product != null
             ? new ProductDto(b.Product)
             : null;
+        PurchasedQuantity = b.Quantity;
     }
 
     public int Id { get; set; }
@@ -36,6 +37,8 @@ public class InventoryBatchDto
     public decimal PurchasePrice { get; set; }
 
     public decimal SellingPrice { get; set; }
+
+    public decimal PurchasedQuantity { get; set; }
 
     public DateOnly? MFGDate { get; set; }
 

@@ -32,7 +32,8 @@ public class ProductRepo : IProductRepository
 
         if (filters.Name?.Count > 0)
         {
-            query = query.Where(c => filters.Name.Contains(c.Name));
+            query = query.Where(c =>
+                filters.Name.Any(f => c.Name.StartsWith(f)));
         }
 
         return await query
