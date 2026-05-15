@@ -127,3 +127,32 @@ ON Products(CategoryId);
 
 CREATE INDEX IX_Products_UnitId
 ON Products(UnitId);
+
+-- =========================================
+-- InventoryBatches Table
+-- =========================================
+
+CREATE TABLE InventoryBatches
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    ProductId INT NOT NULL,
+
+    PurchasePrice DECIMAL(18,2) NOT NULL,
+
+    SellingPrice DECIMAL(18,2) NOT NULL,
+
+    Quantity DECIMAL(18,2) NOT NULL,
+
+    BatchCode NVARCHAR(100) NULL,
+
+    MFGDate DATE NULL,
+
+    ExpiryDate DATE NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_InventoryBatches_Product
+        FOREIGN KEY (ProductId)
+        REFERENCES Products(Id)
+);

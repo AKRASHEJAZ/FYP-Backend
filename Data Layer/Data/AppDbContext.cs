@@ -18,6 +18,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<InventoryBatch> InventoryBatches { get; set; }
+
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
@@ -35,6 +37,17 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC07DE3A77DD");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<InventoryBatch>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Inventor__3214EC079B02ED2D");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.InventoryBatches)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_InventoryBatches_Product");
         });
 
         modelBuilder.Entity<Product>(entity =>
