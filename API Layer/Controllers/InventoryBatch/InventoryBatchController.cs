@@ -24,7 +24,7 @@ public class InventoryBatchController : Controller
     public async Task<IActionResult> GetInventoryBatch([FromBody] InventoryBatchFilters filters)
     {
         var data = await _service.GetAllInventoryBatchesAsync(filters);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
     [Authorize(Roles = "Admin")]
@@ -32,6 +32,6 @@ public class InventoryBatchController : Controller
     public async Task<IActionResult> AddInventoryBatch([FromBody] AddInventoryBatchDto batch)
     {
         var data = await _service.AddInventoryBatchAsync(batch);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 }
