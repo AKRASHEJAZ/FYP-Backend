@@ -3,7 +3,6 @@ using Business_Layer.DTOS;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
-using System.Text.RegularExpressions;
 
 namespace Business_Layer.services;
 
@@ -53,15 +52,17 @@ public class InventoryBatchService
         try
         {
             var product = await _productRepository.GetProductByIdAsync(newBatch.ProductId);
-
-            if (product == null)
-                return ApiResponse<InventoryBatchDto>
-                    .Fail("Product not found for the given ProductId.");
+            
+            (bool flowControl, ApiResponse<InventoryBatchDto> value) = ValidateStockEntry(newBatch, product);
+            if (!flowControl)
+            {
+                return value;
+            }
 
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             var random = Random.Shared.Next(10, 99);
 
-            var batchCode = $"{product.Name?.ToLower() ?? "unknown"}-{timestamp}-{random}";
+            var batchCode = $"{product!.Name?.ToLower() ?? "unknown"}-{timestamp}-{random}";
 
             var batch = new InventoryBatch
             {
@@ -90,5 +91,53 @@ public class InventoryBatchService
             return ApiResponse<InventoryBatchDto>
                 .Fail($"Error adding inventory batch: {ex.Message}");
         }
+    }
+
+    private static (bool flowControl, ApiResponse<InventoryBatchDto> value) ValidateStockEntry(AddInventoryBatchDto newBatch, Product? product)
+    {
+        if (product == null)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Product not found for the given ProductId."));
+
+        if (!product.IsActive)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Cannot add batch for an inactive product."));
+
+        if (!product.IsPurchasable)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Product is not purchasable."));
+
+        if (product.DoesExpire)
+        {
+            if (newBatch.ExpiryDate == null)
+                return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                    .Fail("Expiry date is required for products that expire."));
+
+            if (newBatch.ExpiryDate <= DateOnly.FromDateTime(DateTime.UtcNow))
+                return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                    .Fail("Expiry date must be in the future."));
+
+            if (newBatch.MFGDate != null &&
+                newBatch.ExpiryDate <= newBatch.MFGDate)
+                return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                    .Fail("Expiry date must be after manufacturing date."));
+        }
+
+        if (newBatch.PurchasePrice <= 0)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Purchase price must be greater than zero."));
+
+        if (newBatch.SellingPrice <= 0)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Selling price must be greater than zero."));
+
+        if (newBatch.SellingPrice < newBatch.PurchasePrice)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Selling price cannot be less than purchase price."));
+
+        if (newBatch.PurchasedQuantity <= 0)
+            return (flowControl: false, value: ApiResponse<InventoryBatchDto>
+                .Fail("Purchased quantity must be greater than zero."));
+        return (flowControl: true, value: ApiResponse<InventoryBatchDto>.Success(new InventoryBatchDto()));
     }
 }
