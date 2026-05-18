@@ -48,7 +48,7 @@ public class UserTests
         Assert.Equal(200, response.Code);
         
         Assert.NotNull(response.Data);
-        Assert.NotEmpty(response.Data);
+        Assert.NotEmpty(response.Data.Items);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class UserTests
 
         //Get User
         var allUsers = usersService.getAllUsers(new UserFilters { Name = "update" });
-        var user = allUsers.Data?.FirstOrDefault();
+        var user = allUsers.Data?.Items.FirstOrDefault();
 
         Assert.NotNull(user);
         Assert.NotNull(user.Id);
@@ -114,7 +114,7 @@ public class UserTests
         Assert.NotNull(response.Data);
 
         var updatedUser = usersService.getAllUsers(new UserFilters { Name = "update" })
-                                       .Data?.FirstOrDefault();
+                                       .Data?.Items.FirstOrDefault();
 
         Assert.NotNull(updatedUser);
 
@@ -145,7 +145,7 @@ public class UserTests
         }
 
         var allUsers = usersService.getAllUsers(new UserFilters { Name = "update" });
-        var user = allUsers.Data?.FirstOrDefault();
+        var user = allUsers.Data?.Items.FirstOrDefault();
 
         Assert.NotNull(user);
         Assert.NotNull(user.Id);
@@ -154,10 +154,9 @@ public class UserTests
         
         Assert.Equal(200, response.Code);
 
-        var deletedUserCheck = usersService.getAllUsers(new UserFilters { Name = "update" })
-                                      .Data?
-                                      .FirstOrDefault();
+        var deletedUserCheck = usersService.getAllUsers(new UserFilters { Name = "update" });
 
-        Assert.Null(deletedUserCheck);
+        Assert.Equal(404, deletedUserCheck.Code);
+        Assert.Equal("No users found matching the provided filters", deletedUserCheck.Message);
     }
 }

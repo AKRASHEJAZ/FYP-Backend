@@ -37,9 +37,9 @@ public class UnitCrudTests
 
             Assert.Equal(200, getResponse.Code);
             Assert.NotNull(getResponse.Data);
-            Assert.NotEmpty(getResponse.Data!);
+            Assert.NotEmpty(getResponse.Data!.Items);
 
-            var created = getResponse.Data!.FirstOrDefault();
+            var created = getResponse.Data!.Items.FirstOrDefault();
             Assert.NotNull(created);
             Assert.True(created!.Id > 0);
 
@@ -67,7 +67,7 @@ public class UnitCrudTests
 
             Assert.Equal(200, afterDelete.Code);
             Assert.NotNull(afterDelete.Data);
-            Assert.Empty(afterDelete.Data!);
+            Assert.Empty(afterDelete.Data!.Items);
         }
         finally
         {

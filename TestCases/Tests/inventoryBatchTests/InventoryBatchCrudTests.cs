@@ -92,9 +92,8 @@ public class InventoryBatchCrudTests
         {
             var response = await batchService.GetAllInventoryBatchesAsync(new InventoryBatchFilters());
 
-            Assert.Equal(200, response.Code);
-            Assert.NotNull(response.Data);
-            Assert.Empty(response.Data!);
+            Assert.Equal(400, response.Code);
+            Assert.Equal("No Batches Found", response.Message);
         }
         finally
         {
