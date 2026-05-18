@@ -1,7 +1,7 @@
 ﻿
 namespace Data_Layer.filters;
 
-public class ProductFilters
+public class ProductFilters : Pagination
 {
     public IList<int>? Id { get; set; }
 

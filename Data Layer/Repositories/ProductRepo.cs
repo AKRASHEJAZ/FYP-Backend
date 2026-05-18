@@ -1,9 +1,11 @@
-﻿using Data_Layer.Data;
+﻿using Data_Layer.commons;
+using Data_Layer.Data;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using static System.Net.WebRequestMethods;
 
 namespace Data_Layer.Repositories;
 
@@ -22,7 +24,7 @@ public class ProductRepo : IProductRepository
     {
         return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
     }
-    async Task<IList<Category>> IProductRepository.GetAllCategoriesAsync(CategoryFilters filters)
+    async Task<PaginatedResult<Category>> IProductRepository.GetAllCategoriesAsync(CategoryFilters filters)
     {
         IQueryable<Category> query = _context.Categories;
 
@@ -40,9 +42,21 @@ public class ProductRepo : IProductRepository
             }
         }
 
-        return await query
-            .AsNoTracking()
-            .ToListAsync();
+        var totalItems = query.Count();
+
+        var categories =  await query
+                .Skip((filters.Page - 1) * filters.PageSize)
+                .Take(filters.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+       
+        return new PaginatedResult<Category>
+        {
+            Items = categories,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
     }
 
     async Task IProductRepository.AddCategoryAsync(Category category)
@@ -76,7 +90,7 @@ public class ProductRepo : IProductRepository
     {
         return await _context.Units.FirstOrDefaultAsync(u => u.Id == id);
     }
-    async Task<IList<Unit>> IProductRepository.GetAllUnitsAsync(UnitFilters filters)
+    async Task<PaginatedResult<Unit>> IProductRepository.GetAllUnitsAsync(UnitFilters filters)
     {
         IQueryable<Unit> query = _context.Units;
 
@@ -99,9 +113,21 @@ public class ProductRepo : IProductRepository
             query = query.Where(u => filters.Symbol.Contains(u.Symbol));
         }
 
-        return await query
-            .AsNoTracking()
-            .ToListAsync();
+        var totalItems = query.Count();
+
+        var units = await query
+                .Skip((filters.Page - 1) * filters.PageSize)
+                .Take(filters.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+        return new PaginatedResult<Unit>
+        {
+            Items = units,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
     }
     
     async Task IProductRepository.AddUnitAsync(Unit unit)
@@ -136,7 +162,7 @@ public class ProductRepo : IProductRepository
     }
 
     // Products
-    async Task<IList<Product>> IProductRepository.GetAllProductsAsync(ProductFilters filters)
+    async Task<PaginatedResult<Product>> IProductRepository.GetAllProductsAsync(ProductFilters filters)
     {
        var query = _context.Products
             .Include(p => p.Category)
@@ -182,9 +208,22 @@ public class ProductRepo : IProductRepository
         {
             query = query.Where(p => p.DoesExpire == filters.DoesExpire.Value);
         }
-        return await query
-            .AsNoTracking()
-            .ToListAsync();
+
+        var totalItems = query.Count();
+
+        var products = await query
+                .Skip((filters.Page - 1) * filters.PageSize)
+                .Take(filters.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+        return new PaginatedResult<Product>
+        {
+            Items = products,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
     }
 
     async Task<Product?> IProductRepository.GetProductByIdAsync(int id)

@@ -22,7 +22,7 @@ public class UnitController : Controller
     async public Task<IActionResult> GetAll([FromBody] UnitFilters filters)
     {
         var data = await _service.GetAll(filters);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
 
@@ -31,7 +31,7 @@ public class UnitController : Controller
     async public Task<IActionResult> Add([FromBody] UpdateUnitDto unit)
     {
         var data = await _service.Add(unit);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
     [Authorize(Roles = "Admin")]
@@ -39,7 +39,7 @@ public class UnitController : Controller
     async public Task<IActionResult> Delete([FromRoute] int id)
     {
         var data = await _service.Delete(id);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
     [Authorize(Roles = "Admin")]
@@ -47,6 +47,6 @@ public class UnitController : Controller
     async public Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUnitDto dto)
     {
         var data = await _service.Update(id, dto);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 }

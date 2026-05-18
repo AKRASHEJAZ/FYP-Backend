@@ -22,7 +22,7 @@ public class ProductController : Controller
     async public Task<IActionResult> GetAll([FromBody] ProductFilters filters)
     {
         var data = await _service.GetAllProductsAsync(filters);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
 
@@ -31,7 +31,7 @@ public class ProductController : Controller
     async public Task<IActionResult> Add([FromBody] UpdateProductDto product)
     {
         var data = await _service.Add(product);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
     [Authorize(Roles = "Admin")]
@@ -39,7 +39,7 @@ public class ProductController : Controller
     async public Task<IActionResult> Delete([FromRoute] int id)
     {
         var data = await _service.Delete(id);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 
     [Authorize(Roles = "Admin")]
@@ -47,6 +47,6 @@ public class ProductController : Controller
     async public Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateProductDto dto)
     {
         var data = await _service.Update(id, dto);
-        return StatusCode(data.Code, data.Data);
+        return StatusCode(data.Code, data);
     }
 }

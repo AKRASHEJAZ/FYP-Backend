@@ -1,11 +1,12 @@
 ﻿using Business_Layer.Common;
 using Business_Layer.DTOS;
+using Business_Layer.helpers;
+using Data_Layer.commons;
+using Data_Layer.Entities;
+using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using Data_Layer.filters;
-using Data_Layer.Entities;
-using Business_Layer.helpers;
 
 namespace Business_Layer.services;
 
@@ -56,16 +57,19 @@ public class UserService
         }
     }
 
-    public ApiResponse<List<UserDto>> getAllUsers(UserFilters filters)
+    public ApiResponse<PaginatedResult<UserDto>> getAllUsers(UserFilters filters)
     {
         try
         {
-            var users = _userRepo.GetAll(filters);
-            
-            if(users == null || users.Count == 0)
-                return ApiResponse<List<UserDto>>.Fail("No users found matching the provided filters", 404);
+            var usersResult = _userRepo.GetAll(filters);
 
-            var userDTOs = users.Select(user => new UserDto
+            if (usersResult == null || !usersResult.Items.Any())
+            {
+                return ApiResponse<PaginatedResult<UserDto>>
+                    .Fail("No users found matching the provided filters", 404);
+            }
+
+            var userDTOs = usersResult.Items.Select(user => new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -75,11 +79,22 @@ public class UserService
                 Role = user.Role.Name,
                 RoleId = user.RoleId,
             }).ToList();
-            return ApiResponse<List<UserDto>>.Success(userDTOs, "Users retrieved successfully", 200);
+
+            var paginatedDtoResult = new PaginatedResult<UserDto>
+            {
+                Items = userDTOs,
+                Page = usersResult.Page,
+                PageSize = usersResult.PageSize,
+                TotalItems = usersResult.TotalItems
+            };
+
+            return ApiResponse<PaginatedResult<UserDto>>
+                .Success(paginatedDtoResult, "Users retrieved successfully", 200);
         }
         catch (Exception e)
         {
-            return ApiResponse<List<UserDto>>.Fail("An error occurred while retrieving users: " + e.Message, 500);
+            return ApiResponse<PaginatedResult<UserDto>>
+                .Fail("An error occurred while retrieving users: " + e.Message, 500);
         }
     }
 

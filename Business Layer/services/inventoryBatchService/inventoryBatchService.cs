@@ -1,5 +1,6 @@
 ﻿using Business_Layer.Common;
 using Business_Layer.DTOS;
+using Data_Layer.commons;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
@@ -17,17 +18,33 @@ public class InventoryBatchService
         _productRepository = productRepository;
     }
 
-    public async Task<ApiResponse<List<InventoryBatchDto>>> GetAllInventoryBatchesAsync(InventoryBatchFilters filters)
+    public async Task<ApiResponse<PaginatedResult<InventoryBatchDto>>> GetAllInventoryBatchesAsync(InventoryBatchFilters filters)
     {
         try
         {
-            var batches = await _repository.GetAllInventoryBatchesAsync(filters);
+            var result = await _repository.GetAllInventoryBatchesAsync(filters);
+            var batches = result.Items;
+
+            if (batches == null || batches.Count == 0)
+            {
+                return ApiResponse<PaginatedResult<InventoryBatchDto>>.Fail("No Batches Found");
+            }
+
             var data = batches.Select(b => new InventoryBatchDto(b)).ToList();
-            return ApiResponse<List<InventoryBatchDto>>.Success(data);
+
+            var paginatedResult = new PaginatedResult<InventoryBatchDto>
+            {
+                Items = data,
+                Page = result.Page,
+                PageSize = result.PageSize,
+                TotalItems = result.TotalItems
+            };
+
+            return ApiResponse<PaginatedResult<InventoryBatchDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
-            return ApiResponse<List<InventoryBatchDto>>.Fail($"Error fetching inventory batches: {ex.Message}");
+            return ApiResponse<PaginatedResult<InventoryBatchDto>>.Fail($"Error fetching inventory batches: {ex.Message}");
         }
     }
 

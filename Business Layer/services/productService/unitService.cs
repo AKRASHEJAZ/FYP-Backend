@@ -3,6 +3,7 @@ using Business_Layer.Common;
 using Business_Layer.DTOS;
 using Data_Layer.filters;
 using Data_Layer.Entities;
+using Data_Layer.commons;
 
 namespace Business_Layer.services;
 
@@ -15,16 +16,16 @@ public class UnitService
         _productService = productService;
     }
 
-    public async Task<ApiResponse<IList<UnitDto>>> GetAll(UnitFilters filters)
+    public async Task<ApiResponse<PaginatedResult<UnitDto>>> GetAll(UnitFilters filters)
     {
         try
         {
             var response = await _productService.GetAllUnitsAsync(filters);
+            var units = response.Items;
 
-            //Model The Data Here
             var data = new List<UnitDto>();
 
-            foreach(var i in response)
+            foreach(var i in units)
             {
                 data.Add(new UnitDto
                 {
@@ -34,11 +35,20 @@ public class UnitService
                     CreatedAt = i.CreatedAt
                 });
             }
-            return ApiResponse<IList<UnitDto>>.Success(data, "Data Returned Successfully", 200);
+
+            var paginatedDto = new PaginatedResult<UnitDto>
+            {
+                Items = data,
+                Page = response.Page,
+                PageSize = response.PageSize,
+                TotalItems = response.TotalItems
+            };
+
+            return ApiResponse<PaginatedResult<UnitDto>>.Success(paginatedDto, "Data Returned Successfully", 200);
         }
         catch(Exception e)
         {
-            return ApiResponse<IList<UnitDto>>.Fail($"Some Error Occured {e.Message}", 400);
+            return ApiResponse<PaginatedResult<UnitDto>>.Fail($"Some Error Occured {e.Message}", 400);
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using Business_Layer.Common;
 using Business_Layer.DTOS;
+using Data_Layer.commons;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
@@ -15,24 +16,38 @@ public class CategoryService
         _productService = productService;
     }
 
-    public async Task<ApiResponse<IList<CategoryDto>>> GetAllCategoriesAsync(CategoryFilters filters)
+    public async Task<ApiResponse<PaginatedResult<CategoryDto>>> GetAllCategoriesAsync(CategoryFilters filters)
     {
         try
         {
             var response = await _productService.GetAllCategoriesAsync(filters);
-            
-            var data = response.Select(c => new CategoryDto
+            var categories = response.Items;
+
+            if(categories == null || categories.Count <= 0)
+            {
+                return ApiResponse<PaginatedResult<CategoryDto>>.Fail("No Categories Found");
+            }
+
+            var data = categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
                 Name = c.Name,
                 CreatedAt = c.CreatedAt
             }).ToList();
-            
-            return ApiResponse<IList<CategoryDto>>.Success(data);
+
+            var paginatedDtoResult = new PaginatedResult<CategoryDto>
+            {
+                Items = data,
+                Page = response.Page,
+                PageSize = response.PageSize,
+                TotalItems = response.TotalItems
+            };
+
+            return ApiResponse<PaginatedResult<CategoryDto>>.Success(paginatedDtoResult);
         }
         catch (Exception ex)
         {
-            return ApiResponse<IList<CategoryDto>>.Fail(ex.Message);
+            return ApiResponse<PaginatedResult<CategoryDto>>.Fail(ex.Message);
         }
 
     }

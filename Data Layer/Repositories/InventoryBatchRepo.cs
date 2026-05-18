@@ -1,9 +1,11 @@
 ﻿
+using Data_Layer.commons;
 using Data_Layer.Data;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.WebRequestMethods;
 
 namespace Data_Layer.Repositories;
 
@@ -22,7 +24,7 @@ public class InventoryBatchRepo : IInventoryBatchRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<InventoryBatch>> GetAllInventoryBatchesAsync(InventoryBatchFilters filters)
+    public async Task<PaginatedResult<InventoryBatch>> GetAllInventoryBatchesAsync(InventoryBatchFilters filters)
     {
         var query = _context.InventoryBatches.AsNoTracking().AsQueryable();
 
@@ -51,7 +53,21 @@ public class InventoryBatchRepo : IInventoryBatchRepository
             query = query.Where(c => c.ExpiryDate == (DateOnly)filters.ExpiryDate.Value);
         }
 
-        return await query.ToListAsync();
+        var totalItems = query.Count();
+
+        var data = await query
+                .Skip((filters.Page - 1) * filters.PageSize)
+                .Take(filters.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+        return new PaginatedResult<InventoryBatch>
+        {
+            Items = data,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
     }
     public async Task<InventoryBatch?> GetInventoryBatchByIdAsync(int id)
     {

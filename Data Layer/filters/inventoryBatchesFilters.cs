@@ -1,6 +1,6 @@
 ﻿namespace Data_Layer.filters;
 
-public class InventoryBatchFilters
+public class InventoryBatchFilters : Pagination
 {
     public IList<int>? Id { get; set; }
 

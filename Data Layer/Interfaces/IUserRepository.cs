@@ -1,4 +1,5 @@
 ﻿
+using Data_Layer.commons;
 using Data_Layer.Entities;
 using Data_Layer.filters;
 
@@ -10,7 +11,7 @@ namespace Data_Layer.Interfaces
         bool Add(User user);
 
         User? GetById(int id);
-        List<User>? GetAll(UserFilters filter);
+        PaginatedResult<User>? GetAll(UserFilters filter);
 
         User? Delete(int id);
 

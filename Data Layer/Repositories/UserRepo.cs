@@ -3,6 +3,7 @@ using Data_Layer.Entities;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Data_Layer.filters;
+using Data_Layer.commons;
 
 namespace Data_Layer.Repositories;
 
@@ -39,7 +40,7 @@ public class UserRepo : IUserRepository
         }
     }
 
-    List<User>? IUserRepository.GetAll(UserFilters filter)
+    PaginatedResult<User>? IUserRepository.GetAll(UserFilters filter)
     {
         try
         {
@@ -65,7 +66,21 @@ public class UserRepo : IUserRepository
                 query = query.Where(u => filter.Roles.Contains(u.Role.Name));
             }
 
-            return query.ToList();
+            var totalItems = query.Count();
+
+            var users = query
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .AsNoTracking()
+                .ToList();
+
+            return new PaginatedResult<User>
+            {
+                Items = users,
+                Page = filter.Page,
+                PageSize = filter.PageSize,
+                TotalItems = totalItems
+            };
         }
         catch
         {
