@@ -9,7 +9,7 @@ namespace API_Layer.Controllers;
 [ApiController]
 [Route("api/customer")]
 
-public class CustomerController : Controller
+public class CustomerController : ControllerBase
 {
     private readonly CustomerService _service;
 

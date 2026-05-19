@@ -49,6 +49,11 @@ public class CustomerService
 
     public async Task<ApiResponse<CustomerDto>> CreateCustomerAsync(CreateCustomerDto createDto)
     {
+        if(String.IsNullOrWhiteSpace(createDto.Name))
+        {
+            return ApiResponse<CustomerDto>.Fail("Customer name is required.");
+        }
+
         var newCustomer = new Customer
         {
             Name = createDto.Name,
