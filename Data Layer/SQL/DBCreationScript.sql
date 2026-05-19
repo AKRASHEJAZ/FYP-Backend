@@ -156,3 +156,23 @@ CREATE TABLE InventoryBatches
         FOREIGN KEY (ProductId)
         REFERENCES Products(Id)
 );
+
+-- ===================
+-- Customer Table
+-- ===================
+
+CREATE TABLE Customers
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+
+    Name NVARCHAR(150) NOT NULL,
+
+    Phone NVARCHAR(30) NULL,
+    Email NVARCHAR(150) NULL,
+
+    Address NVARCHAR(250) NULL,
+
+    IsWalkIn BIT NOT NULL DEFAULT 0,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);

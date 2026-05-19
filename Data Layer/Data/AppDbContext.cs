@@ -18,6 +18,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<Customer> Customers { get; set; }
+
     public virtual DbSet<InventoryBatch> InventoryBatches { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
@@ -35,6 +37,13 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC07DE3A77DD");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07CB3DEDB2");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
         });
