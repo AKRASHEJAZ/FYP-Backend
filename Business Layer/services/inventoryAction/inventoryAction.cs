@@ -24,11 +24,11 @@ public class InventoryActionService
     {
         try
         {
-            (bool flowControl, ApiResponse<string> value) = validateSale(dto);
+            (bool flowControl, ApiResponse<string>? value) = validateSale(dto);
             
             if (!flowControl)
             {
-                return value;
+                return value!;
             }
 
             var authResult = _user.GetAuthUser();
@@ -57,9 +57,7 @@ public class InventoryActionService
         }
         catch (Exception ex)
         {
-            {
-                return ApiResponse<string>.Fail(ex.Message);
-            }
+             return ApiResponse<string>.Fail(ex.Message);
         }
     }
 
@@ -101,7 +99,7 @@ public class InventoryActionService
     }
 
     // Helpers
-    private (bool flowControl, ApiResponse<string> value) validateSale(AddSaleDto dto)
+    private (bool flowControl, ApiResponse<string>? value) validateSale(AddSaleDto dto)
     {
         if (dto.InventoryActions.Count <= 0)
         {

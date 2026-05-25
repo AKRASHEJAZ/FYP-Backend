@@ -70,7 +70,7 @@ public class InventoryActionRepo : IInventoryActionRepository
             query = query.Include(s => s.Customer);
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
 
         var results = await query.Skip((filters.Page - 1) * filters.PageSize)
                 .Take(filters.PageSize)
