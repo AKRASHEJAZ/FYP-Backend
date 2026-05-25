@@ -24,7 +24,7 @@ public class InventoryActionService
     {
         try
         {
-            (bool flowControl, ApiResponse<string>? value) = validateSale(dto);
+            var (flowControl, value) = await ValidateSaleAsync(dto);
             
             if (!flowControl)
             {
@@ -97,9 +97,8 @@ public class InventoryActionService
             return ApiResponse<PaginatedResult<SaleDto>>.Fail($"Some Error Occured: {e.Message}");
         }
     }
-
     // Helpers
-    private (bool flowControl, ApiResponse<string>? value) validateSale(AddSaleDto dto)
+    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateSaleAsync(AddSaleDto dto)
     {
         if (dto.InventoryActions.Count <= 0)
         {
@@ -111,9 +110,14 @@ public class InventoryActionService
             return (flowControl: false, value: ApiResponse<string>.Fail("Quantity must be greater than zero."));
         }
 
-        if (dto.InventoryActions.Any(x => _batchRepo.GetInventoryBatchByIdAsync(x.InventoryBatchId) == null))
+        // Avoid running multiple EF operations concurrently on the same DbContext.
+        foreach (var action in dto.InventoryActions)
         {
-            return (flowControl: false, value: ApiResponse<string>.Fail("Invalid Batch Id Entered"));
+            var batch = await _batchRepo.GetInventoryBatchByIdAsync(action.InventoryBatchId);
+            if (batch == null)
+            {
+                return (flowControl: false, value: ApiResponse<string>.Fail("Invalid Batch Id Entered"));
+            }
         }
 
         return (flowControl: true, value: null);
