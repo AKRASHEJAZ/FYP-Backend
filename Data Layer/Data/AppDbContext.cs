@@ -20,11 +20,15 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Customer> Customers { get; set; }
 
+    public virtual DbSet<InventoryAction> InventoryActions { get; set; }
+
     public virtual DbSet<InventoryBatch> InventoryBatches { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<Sale> Sales { get; set; }
 
     public virtual DbSet<Unit> Units { get; set; }
 
@@ -46,6 +50,21 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07CB3DEDB2");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<InventoryAction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Inventor__3214EC07148B1D43");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.InventoryActions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Inventory__Creat__1CBC4616");
+
+            entity.HasOne(d => d.InventoryBatch).WithMany(p => p.InventoryActions)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Inventory__Inven__1BC821DD");
         });
 
         modelBuilder.Entity<InventoryBatch>(entity =>
@@ -80,6 +99,19 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Role>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07F06666D7");
+        });
+
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Sales__3214EC072472C1EC");
+
+            entity.Property(e => e.SaleDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Sales)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Sales__CreatedBy__17F790F9");
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.Sales).HasConstraintName("FK__Sales__CustomerI__17036CC0");
         });
 
         modelBuilder.Entity<Unit>(entity =>

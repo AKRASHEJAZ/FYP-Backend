@@ -27,9 +27,15 @@ public partial class User
 
     public bool IsActive { get; set; }
 
+    [InverseProperty("CreatedByNavigation")]
+    public virtual ICollection<InventoryAction> InventoryActions { get; set; } = new List<InventoryAction>();
+
     [ForeignKey("RoleId")]
     [InverseProperty("Users")]
     public virtual Role Role { get; set; } = null!;
+
+    [InverseProperty("CreatedByNavigation")]
+    public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 
     [InverseProperty("PerformedByNavigation")]
     public virtual ICollection<UserAuditLog> UserAuditLogPerformedByNavigations { get; set; } = new List<UserAuditLog>();

@@ -12,12 +12,15 @@ public class ProductDto
     public ProductDto(Product p)
     {
         Id = p.Id;
-        Category = new CategoryDto
+        if(p.Category != null)
         {
-            Id = p.Category.Id,
-            Name = p.Category.Name,
-            CreatedAt = p.Category.CreatedAt
-        };
+            Category = new CategoryDto
+            {
+                Id = p.Category.Id,
+                Name = p.Category.Name,
+                CreatedAt = p.Category.CreatedAt
+            };
+        }
         CategoryId = p.CategoryId;
         CreatedAt = p.CreatedAt;
         DoesExpire = p.DoesExpire;
@@ -26,14 +29,17 @@ public class ProductDto
         IsPurchasable = p.IsPurchasable;
         IsSellable = p.IsSellable;
         Name = p.Name;
-        Unit = new UnitDto
-        {
-            Id = p.Unit.Id,
-            Name = p.Unit.Name,
-            Symbol = p.Unit.Symbol,
-            CreatedAt = p.Unit.CreatedAt
-        };
         UnitId = p.UnitId;
+        if (p.Unit != null)
+        {
+            Unit = new UnitDto
+            {
+                Id = p.Unit.Id,
+                Name = p.Unit.Name,
+                Symbol = p.Unit.Symbol,
+                CreatedAt = p.Unit.CreatedAt
+            };
+        }
     }
 
     public int Id { get; set; }

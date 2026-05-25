@@ -26,4 +26,7 @@ public partial class Customer
     public bool IsWalkIn { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    [InverseProperty("Customer")]
+    public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 }

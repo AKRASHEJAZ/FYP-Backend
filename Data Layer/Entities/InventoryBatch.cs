@@ -32,6 +32,9 @@ public partial class InventoryBatch
 
     public DateTime CreatedAt { get; set; }
 
+    [InverseProperty("InventoryBatch")]
+    public virtual ICollection<InventoryAction> InventoryActions { get; set; } = new List<InventoryAction>();
+
     [ForeignKey("ProductId")]
     [InverseProperty("InventoryBatches")]
     public virtual Product Product { get; set; } = null!;

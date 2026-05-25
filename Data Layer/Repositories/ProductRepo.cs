@@ -4,8 +4,6 @@ using Data_Layer.Entities;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using static System.Net.WebRequestMethods;
 
 namespace Data_Layer.Repositories;
 
