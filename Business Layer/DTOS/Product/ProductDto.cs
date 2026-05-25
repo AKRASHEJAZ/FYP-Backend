@@ -12,6 +12,7 @@ public class ProductDto
     public ProductDto(Product p)
     {
         Id = p.Id;
+        if(p.Category != null)
         Category = new CategoryDto
         {
             Id = p.Category.Id,
@@ -26,13 +27,16 @@ public class ProductDto
         IsPurchasable = p.IsPurchasable;
         IsSellable = p.IsSellable;
         Name = p.Name;
-        Unit = new UnitDto
+        if(p.Unit != null)
         {
-            Id = p.Unit.Id,
-            Name = p.Unit.Name,
-            Symbol = p.Unit.Symbol,
-            CreatedAt = p.Unit.CreatedAt
-        };
+            Unit = new UnitDto
+            {
+                Id = p.Unit.Id,
+                Name = p.Unit.Name,
+                Symbol = p.Unit.Symbol,
+                CreatedAt = p.Unit.CreatedAt
+            };
+        }
         UnitId = p.UnitId;
     }
 

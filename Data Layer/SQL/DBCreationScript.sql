@@ -176,3 +176,53 @@ CREATE TABLE Customers
 
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
 );
+
+-- ============================
+-- Sales, InventoryActions Tables
+-- ============================
+
+CREATE TABLE Sales
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    CustomerId INT NULL,
+
+    TotalAmount DECIMAL(18,2) NOT NULL,
+
+    SaleDate DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CreatedBy INT NOT NULL,
+
+    FOREIGN KEY (CustomerId)
+        REFERENCES Customers(Id),
+
+    FOREIGN KEY (CreatedBy)
+        REFERENCES Users(Id)
+);
+
+CREATE TABLE InventoryActions
+(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+
+    InventoryBatchId INT NOT NULL,
+
+    ActionType INT NOT NULL,
+
+    Quantity DECIMAL(18,2) NOT NULL,
+
+    ReferenceId INT NULL,
+
+    ReferenceType INT NULL,
+
+    Notes NVARCHAR(250) NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CreatedBy INT NOT NULL,
+
+    FOREIGN KEY (InventoryBatchId)
+        REFERENCES InventoryBatches(Id),
+
+    FOREIGN KEY (CreatedBy)
+        REFERENCES Users(Id)
+);
