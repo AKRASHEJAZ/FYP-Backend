@@ -71,6 +71,8 @@ public class InventoryBatchRepo : IInventoryBatchRepository
     }
     public async Task<InventoryBatch?> GetInventoryBatchByIdAsync(int id)
     {
-        return await _context.InventoryBatches.FindAsync(id);
+        return await _context.InventoryBatches
+            .Include(b => b.Product)
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 }

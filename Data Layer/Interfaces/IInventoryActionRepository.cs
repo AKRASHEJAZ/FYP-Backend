@@ -9,5 +9,5 @@ public interface IInventoryActionRepository
     // Sales Method
     Task CreateSaleAsync(Sale newSale, IList<InventoryAction> inventoryActions);
     Task<PaginatedResult<Sale>> GetAllSaleAsync(SaleFilters filters);
-    Task<IList<InventoryAction>> GetInventoryActionsAsync(int referenceId, bool includeBatch);
+    Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters);
 }

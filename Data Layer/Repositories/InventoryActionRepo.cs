@@ -31,6 +31,7 @@ public class InventoryActionRepo : IInventoryActionRepository
             {
                 action.ReferenceId = newSale.Id;
                 action.ReferenceType = InventoryReferenceType.Sale;
+                action.ActionType = InventoryActionType.Sale;
             }
 
             _context.InventoryActions.AddRange(inventoryActions);
@@ -86,13 +87,21 @@ public class InventoryActionRepo : IInventoryActionRepository
         };
     }
 
-    public async Task<IList<InventoryAction>> GetInventoryActionsAsync(int referenceId, bool includeBatch)
+    public async Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters)
     {
         var query = _context.InventoryActions.AsQueryable();
 
-        query = query.Where(a => a.ReferenceId == referenceId);
+        if(filters.referenceId > 0)
+        {
+            query = query.Where(a => a.ReferenceId == filters.referenceId);
+        }
 
-        if(includeBatch)
+        if(filters.batchId > 0)
+        {
+            query = query.Where(a => a.InventoryBatchId == filters.batchId);
+        }
+
+        if(filters.includeBatch)
         {
             query = query.Include(a => a.InventoryBatch).
                           ThenInclude(a => a.Product).

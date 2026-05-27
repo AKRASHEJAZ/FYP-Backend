@@ -1,4 +1,5 @@
-﻿using Data_Layer.Entities;
+﻿using Business_Layer.common;
+using Data_Layer.Entities;
 
 namespace Business_Layer.DTOS;
 
@@ -45,6 +46,7 @@ public class InventoryBatchDto
     public DateOnly? ExpiryDate { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    public InventoryBatchStock? Stocks { get; set; }
 
     // Navigation
     public ProductDto? Product { get; set; }
