@@ -5,7 +5,6 @@ using Data_Layer.Interfaces;
 using Data_Layer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using TestCases.Common.Seeders;
 using Microsoft.Extensions.Configuration;
 
@@ -35,6 +34,7 @@ public static class TestServices
         services.AddScoped<IUserRepository, UserRepo>();
         services.AddScoped<IProductRepository, ProductRepo>();
         services.AddScoped<IInventoryBatchRepository, InventoryBatchRepo>();
+        services.AddScoped<IInventoryActionRepository, InventoryActionRepo>();
 
         // Services
         services.AddScoped<UserService>();
@@ -44,6 +44,7 @@ public static class TestServices
         services.AddScoped<ProductService>();
         services.AddScoped<CategoryService>();
         services.AddScoped<InventoryBatchService>();
+        services.AddScoped<InventoryActionService>();
 
         // Seeder
         services.AddScoped<AuthUserSeeder>();
