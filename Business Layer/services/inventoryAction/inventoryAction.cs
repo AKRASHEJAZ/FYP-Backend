@@ -187,7 +187,7 @@ public class InventoryActionService
     }
 
     // Helpers
-    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateSaleAsync(AddSaleDto dto)
+    private static async Task<(bool flowControl, ApiResponse<string>? value)> ValidateSaleAsync(AddSaleDto dto)
     {
         if (dto.InventoryActions.Count <= 0)
         {
