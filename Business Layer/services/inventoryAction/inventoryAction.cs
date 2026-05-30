@@ -12,12 +12,14 @@ public class InventoryActionService
     private readonly IInventoryActionRepository _repo;
     private readonly IInventoryBatchRepository _batchRepo;
     private readonly UserService _user;
+    private readonly InventoryBatchService _batchService;
 
-    public InventoryActionService(IInventoryActionRepository repo, IInventoryBatchRepository inventoryBatch, UserService user)
+    public InventoryActionService(IInventoryActionRepository repo, IInventoryBatchRepository inventoryBatch, UserService user, InventoryBatchService batchService)
     {
         _repo = repo;
         _batchRepo = inventoryBatch;
         _user = user;
+        _batchService = batchService;
     }
 
     public async Task<ApiResponse<string>> CreateSaleAsync(AddSaleDto dto)
@@ -78,7 +80,10 @@ public class InventoryActionService
 
             foreach (var sale in sales)
             {
-                var actions = await _repo.GetInventoryActionsAsync(sale.Id, filters.IsIncludeInventoryBatch ?? false);
+                var actions = await _repo.GetInventoryActionsAsync(new InventoryActionFilters{ 
+                    referenceId = sale.Id,
+                    includeBatch = filters.IsIncludeInventoryBatch ?? false
+                    });
                 returnData.Add(new SaleDto(sale, actions));
             }
 
@@ -97,6 +102,7 @@ public class InventoryActionService
             return ApiResponse<PaginatedResult<SaleDto>>.Fail($"Some Error Occured: {e.Message}");
         }
     }
+
     // Helpers
     private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateSaleAsync(AddSaleDto dto)
     {
@@ -110,16 +116,45 @@ public class InventoryActionService
             return (flowControl: false, value: ApiResponse<string>.Fail("Quantity must be greater than zero."));
         }
 
-        // Avoid running multiple EF operations concurrently on the same DbContext.
         foreach (var action in dto.InventoryActions)
         {
             var batch = await _batchRepo.GetInventoryBatchByIdAsync(action.InventoryBatchId);
+            
             if (batch == null)
             {
                 return (flowControl: false, value: ApiResponse<string>.Fail("Invalid Batch Id Entered"));
+            }
+
+            if (action.Quantity <= 0)
+            {
+                return (
+                    flowControl: false,
+                    value: ApiResponse<string>.Fail("Quantity must be greater than zero")
+                );
+            }
+
+            var stocks = _batchService.GetBatchStockAsync(batch.Id).Result.Data;
+
+            if(stocks == null)
+            {
+                return (
+                    flowControl: false,
+                    value: ApiResponse<string>.Fail($"Unable to retrieve stock information for batch ID {batch.Id}")
+                );
+            }
+
+            if (stocks.AvailableStock < action.Quantity)
+            {
+                return (
+                    flowControl: false,
+                    value: ApiResponse<string>.Fail(
+                        $"Insufficient stock for batch {batch.BatchCode} - {batch.Product?.Name ?? ""}. Available stock: {stocks.AvailableStock}"
+                    )
+                );
             }
         }
 
         return (flowControl: true, value: null);
     }
+
 }

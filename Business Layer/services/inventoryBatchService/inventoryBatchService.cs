@@ -2,6 +2,7 @@
 using Business_Layer.DTOS;
 using Data_Layer.commons;
 using Data_Layer.Entities;
+using Data_Layer.enums;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 
@@ -11,11 +12,13 @@ public class InventoryBatchService
 {
     private readonly IInventoryBatchRepository _repository;
     private readonly IProductRepository _productRepository;
+    private readonly IInventoryActionRepository _inventoryActionRepository;
 
-    public InventoryBatchService(IInventoryBatchRepository repository, IProductRepository productRepository)
+    public InventoryBatchService(IInventoryBatchRepository repository, IProductRepository productRepository, IInventoryActionRepository inventoryActionRepository)
     {
         _repository = repository;
         _productRepository = productRepository;
+        _inventoryActionRepository = inventoryActionRepository;
     }
 
     public async Task<ApiResponse<PaginatedResult<InventoryBatchDto>>> GetAllInventoryBatchesAsync(InventoryBatchFilters filters)
@@ -31,6 +34,15 @@ public class InventoryBatchService
             }
 
             var data = batches.Select(b => new InventoryBatchDto(b)).ToList();
+
+            foreach (var d in data)
+            {
+                var stockResponse = await GetBatchStockAsync(d.Id);
+                if (stockResponse.Code == 200)
+                {
+                    d.Stocks = stockResponse.Data;
+                }
+            }
 
             var paginatedResult = new PaginatedResult<InventoryBatchDto>
             {
@@ -56,6 +68,11 @@ public class InventoryBatchService
             if (batch == null)
                 return ApiResponse<InventoryBatchDto>.Fail("Inventory batch not found.");
             var data = new InventoryBatchDto(batch);
+            var stockResponse = await GetBatchStockAsync(id);
+            if (stockResponse.Code == 200)
+            {
+                data.Stocks = stockResponse.Data;
+            }
             return ApiResponse<InventoryBatchDto>.Success(data);
         }
         catch (Exception ex)
@@ -101,6 +118,15 @@ public class InventoryBatchService
 
             var data = new InventoryBatchDto(batch);
 
+            data.Stocks = new InventoryBatchStock
+            {
+                BatchId = batch.Id,
+                Quantity = batch.Quantity,
+                Sold = 0,
+                Damaged = 0,
+                Returned = 0
+            };
+
             return ApiResponse<InventoryBatchDto>.Success(data);
         }
         catch (Exception ex)
@@ -110,6 +136,62 @@ public class InventoryBatchService
         }
     }
 
+    public async Task<ApiResponse<InventoryBatchStock>> GetBatchStockAsync(int batchId)
+    {
+        if (batchId <= 0)
+        {
+            return ApiResponse<InventoryBatchStock>.Fail("Please Enter a Valid Id");
+        }
+
+        var batch = await _repository.GetInventoryBatchByIdAsync(batchId);
+
+        if (batch == null)
+        {
+            return ApiResponse<InventoryBatchStock>.Fail("No Inventory Batch Found");
+        }
+
+        var actions = await _inventoryActionRepository.GetInventoryActionsAsync(
+            new InventoryActionFilters
+            {
+                batchId = batchId
+            });
+
+        decimal totalSold = 0;
+        decimal damages = 0;
+        decimal returns = 0;
+
+        foreach (var action in actions)
+        {
+            if (action.ActionType == InventoryActionType.Sale ||
+                action.ReferenceType == InventoryReferenceType.Sale)
+            {
+                totalSold += action.Quantity;
+            }
+
+            if (action.ActionType == InventoryActionType.Damage ||
+                action.ReferenceType == InventoryReferenceType.Damage)
+            {
+                damages += action.Quantity;
+            }
+
+            if (action.ActionType == InventoryActionType.Return ||
+                action.ReferenceType == InventoryReferenceType.Return)
+            {
+                returns += action.Quantity;
+            }
+        }
+
+        return ApiResponse<InventoryBatchStock>.Success(new InventoryBatchStock
+        {
+            BatchId = batchId,
+            Quantity = batch.Quantity,
+            Sold = totalSold,
+            Damaged = damages,
+            Returned = returns
+        });
+    }
+
+    // Helpers
     private static (bool flowControl, ApiResponse<InventoryBatchDto> value) ValidateStockEntry(AddInventoryBatchDto newBatch, Product? product)
     {
         if (product == null)
