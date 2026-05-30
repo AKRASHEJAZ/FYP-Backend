@@ -10,7 +10,7 @@ namespace API_Layer.Controllers;
 [ApiController]
 [Route("api/stock")]
 
-public class InventoryBatchController : Controller
+public class InventoryBatchController : ControllerBase
 {
     private readonly InventoryBatchService _service;
 

@@ -40,7 +40,7 @@ public class ProductRepo : IProductRepository
             }
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
 
         var categories =  await query
                 .Skip((filters.Page - 1) * filters.PageSize)
@@ -111,7 +111,7 @@ public class ProductRepo : IProductRepository
             query = query.Where(u => filters.Symbol.Contains(u.Symbol));
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
 
         var units = await query
                 .Skip((filters.Page - 1) * filters.PageSize)
@@ -143,8 +143,9 @@ public class ProductRepo : IProductRepository
                 existingUnit.Name = unit.Name;
             
             if(unit.Symbol != null)
-            existingUnit.Symbol = unit.Symbol;
-            
+            {
+                existingUnit.Symbol = unit.Symbol;
+            }
             await _context.SaveChangesAsync();
         }
     }
@@ -207,7 +208,7 @@ public class ProductRepo : IProductRepository
             query = query.Where(p => p.DoesExpire == filters.DoesExpire.Value);
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
 
         var products = await query
                 .Skip((filters.Page - 1) * filters.PageSize)

@@ -63,7 +63,7 @@ public class UnitService
 
             var data = new Unit {
                 Name = unit.Name,
-                Symbol = unit.Symbol,
+                Symbol = unit.Symbol ?? "",
                 CreatedAt = DateTime.Now
             };
 

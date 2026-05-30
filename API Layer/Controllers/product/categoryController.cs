@@ -8,7 +8,7 @@ namespace API_Layer.Controllers;
 
 [ApiController]
 [Route("api/category")]
-public class CategoryController : Controller
+public class CategoryController : ControllerBase
 {
     private readonly CategoryService _service;
 

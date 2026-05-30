@@ -50,10 +50,10 @@ public class InventoryBatchRepo : IInventoryBatchRepository
 
         if (filters.ExpiryDate.HasValue)
         {
-            query = query.Where(c => c.ExpiryDate == (DateOnly)filters.ExpiryDate.Value);
+            query = query.Where(c => c.ExpiryDate == filters.ExpiryDate.Value);
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
 
         var data = await query
                 .Skip((filters.Page - 1) * filters.PageSize)

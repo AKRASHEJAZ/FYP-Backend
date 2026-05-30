@@ -8,7 +8,7 @@ namespace API_Layer.Controllers;
 
 [ApiController]
 [Route("api/product")]
-public class ProductController : Controller
+public class ProductController : ControllerBase
 {
     private readonly ProductService _service;
 
