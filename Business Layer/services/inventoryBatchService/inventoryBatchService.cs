@@ -1,5 +1,4 @@
-﻿using Business_Layer.common;
-using Business_Layer.Common;
+﻿using Business_Layer.Common;
 using Business_Layer.DTOS;
 using Data_Layer.commons;
 using Data_Layer.Entities;

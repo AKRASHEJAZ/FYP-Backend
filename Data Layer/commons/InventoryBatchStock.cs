@@ -1,4 +1,4 @@
-﻿namespace Business_Layer.common;
+﻿namespace Data_Layer.commons;
 
 public class InventoryBatchStock
 {

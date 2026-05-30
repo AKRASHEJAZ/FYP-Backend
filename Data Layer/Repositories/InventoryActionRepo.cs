@@ -5,24 +5,43 @@ using Data_Layer.enums;
 using Data_Layer.filters;
 using Data_Layer.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Data_Layer.Repositories;
 
 public class InventoryActionRepo : IInventoryActionRepository
 {
     private readonly AppDbContext _context;
+    private readonly IInventoryBatchRepository _batchRepo;
 
-    public InventoryActionRepo(AppDbContext context)
+    public InventoryActionRepo(AppDbContext context, IInventoryBatchRepository batchRepo)
     {
         _context = context;
+        _batchRepo = batchRepo;
     }
     public async Task CreateSaleAsync(Sale newSale, IList<InventoryAction> inventoryActions)
     {
-        using var transaction =
-            await _context.Database.BeginTransactionAsync();
+        using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
         try
         {
+
+            //VALIDATE SALE 
+            
+            foreach (var action in inventoryActions)
+            {
+                var batchStock = await this.GetBatchStockAsync(action.InventoryBatchId);
+                if (batchStock == null || batchStock.BatchId <= 0)
+                {
+                    throw new InvalidOperationException($"Batch with ID {action.InventoryBatchId} not found.");
+                }
+                var availableStock = batchStock.Quantity - batchStock.Sold - batchStock.Damaged + batchStock.Returned;
+                if (action.Quantity > availableStock)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for Batch ID {action.InventoryBatchId}. Available: {availableStock}, Requested: {action.Quantity}");
+                }
+            }
+
             _context.Sales.Add(newSale);
 
             await _context.SaveChangesAsync();
@@ -40,6 +59,13 @@ public class InventoryActionRepo : IInventoryActionRepository
 
             await transaction.CommitAsync();
         }
+
+        catch(InvalidOperationException)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+
         catch
         {
             await transaction.RollbackAsync();
@@ -112,5 +138,60 @@ public class InventoryActionRepo : IInventoryActionRepository
         }
 
         return await query.ToListAsync();
+    }
+
+    private async Task<InventoryBatchStock> GetBatchStockAsync(int batchId)
+    {
+        if (batchId <= 0)
+        {
+            return new InventoryBatchStock();
+        }
+
+        var batch = await _batchRepo.GetInventoryBatchByIdAsync(batchId);
+
+        if (batch == null)
+        {
+            return new InventoryBatchStock();
+        }
+
+        var actions = await this.GetInventoryActionsAsync(
+            new InventoryActionFilters
+            {
+                batchId = batchId
+            });
+
+        decimal totalSold = 0;
+        decimal damages = 0;
+        decimal returns = 0;
+
+        foreach (var action in actions)
+        {
+            if (action.ActionType == InventoryActionType.Sale ||
+                action.ReferenceType == InventoryReferenceType.Sale)
+            {
+                totalSold += action.Quantity;
+            }
+
+            if (action.ActionType == InventoryActionType.Damage ||
+                action.ReferenceType == InventoryReferenceType.Damage)
+            {
+                damages += action.Quantity;
+            }
+
+            if (action.ActionType == InventoryActionType.Return ||
+                action.ReferenceType == InventoryReferenceType.Return)
+            {
+                returns += action.Quantity;
+            }
+        }
+
+        return new InventoryBatchStock
+        {
+            BatchId = batchId,
+            Quantity = batch.Quantity,
+            Sold = totalSold,
+            Damaged = damages,
+            Returned = returns
+        };
     }
 }
