@@ -18,7 +18,7 @@ public class InventoryActions : ControllerBase
         _inventoryActionService = inventoryActionService;
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin, Cashier")]
     [HttpPost("CreateSale")]
     public async Task<IActionResult> CreateSale([FromBody] AddSaleDto dto)
     {
@@ -35,7 +35,7 @@ public class InventoryActions : ControllerBase
         return StatusCode(results.Code, results);
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPost("CreateDamage")]
     public async Task<IActionResult> CreateDamage([FromBody] AddDamageDto dto)
     {
