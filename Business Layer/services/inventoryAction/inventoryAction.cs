@@ -26,11 +26,18 @@ public class InventoryActionService
     {
         try
         {
-            var (flowControl, value) = await ValidateSaleAsync(dto);
-            
-            if (!flowControl)
+            var (isValid, errorResult) = await ValidateSaleAsync(dto);
+
+            if (!isValid)
             {
-                return value!;
+                return errorResult!;
+            }
+
+            (isValid, errorResult) = await ValidateActionsAsync(dto.InventoryActions, false);
+
+            if (!isValid)
+            {
+                return errorResult!;
             }
 
             var authResult = _user.GetAuthUser();
@@ -67,6 +74,7 @@ public class InventoryActionService
     {
         try
         {
+
             var result = await _repo.GetAllSaleAsync(filters);
 
             var sales = result.Items;
@@ -103,6 +111,81 @@ public class InventoryActionService
         }
     }
 
+    //Damages
+    public async Task<ApiResponse<string>> CreateDamageAsync(AddDamageDto dto)
+    {
+        try
+        {
+            var (isValid, errorResult) = await ValidateActionsAsync(dto.InventoryActions, true);
+
+            if (!isValid)
+            {
+                return errorResult!;
+            }
+
+            var authResult = _user.GetAuthUser();
+            var authUser = authResult.Data;
+            if (authResult.Code != 200 || authResult.Data == null)
+                return ApiResponse<string>.Fail("Unauthorized", 401);
+            var newDamage = new Damage 
+            {   DamageDate = DateTime.Now,
+                CreatedBy = (int)authUser!.Id!,
+            };
+            var actions = dto.InventoryActions.Select(x => new InventoryAction
+            {
+                InventoryBatchId = x.InventoryBatchId,
+                Quantity = x.Quantity,
+                CreatedBy = (int)authUser!.Id!,
+                Notes = x.Notes,
+            }).ToList();
+            await _repo.CreateDamageAsync(newDamage, actions);
+            return ApiResponse<string>.Success("Damage record created successfully");
+        }
+        catch (Exception ex)
+        {
+             return ApiResponse<string>.Fail(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResult<DamageDto>>> GetDamagesAsync(DamageFilters filters)
+    {
+        try
+        {
+            var result = await _repo.GetAllDamageAsync(filters);
+            var damages = result.Items;
+            
+            if(damages == null || damages.Count <= 0 )
+            {
+                return ApiResponse<PaginatedResult<DamageDto>>.Fail("No damage record found");
+            }
+            
+            var returnData = new List<DamageDto>();
+            
+            foreach (var damage in damages)
+            {
+                var actions = await _repo.GetInventoryActionsAsync(new InventoryActionFilters{ 
+                    referenceId = damage.Id,
+                    includeBatch = filters.IsIncludeInventoryBatch ?? false,
+                    batchId = filters.InventoryBatchId,
+                    productId = filters.productId,
+                });
+                returnData.Add(new DamageDto(damage, actions));
+            }
+            var paginatedResult = new PaginatedResult<DamageDto>
+            { 
+                Items = returnData,
+                Page = result.Page,
+                PageSize = result.PageSize,
+                TotalItems = result.TotalItems
+            };
+            return ApiResponse<PaginatedResult<DamageDto>>.Success(paginatedResult);
+        }
+        catch (Exception e)
+        {
+            return ApiResponse<PaginatedResult<DamageDto>>.Fail($"Some Error Occured: {e.Message}");
+        }
+    }
+
     // Helpers
     private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateSaleAsync(AddSaleDto dto)
     {
@@ -116,10 +199,15 @@ public class InventoryActionService
             return (flowControl: false, value: ApiResponse<string>.Fail("Quantity must be greater than zero."));
         }
 
-        foreach (var action in dto.InventoryActions)
+        return (flowControl: true, value: null);
+    }
+
+    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateActionsAsync(IList<AddInventoryActionDto> actions, bool checkNotes)
+    {
+        foreach (var action in actions)
         {
             var batch = await _batchRepo.GetInventoryBatchByIdAsync(action.InventoryBatchId);
-            
+
             if (batch == null)
             {
                 return (flowControl: false, value: ApiResponse<string>.Fail("Invalid Batch Id Entered"));
@@ -135,7 +223,7 @@ public class InventoryActionService
 
             var stocks = _batchService.GetBatchStockAsync(batch.Id).Result.Data;
 
-            if(stocks == null)
+            if (stocks == null)
             {
                 return (
                     flowControl: false,
@@ -152,8 +240,15 @@ public class InventoryActionService
                     )
                 );
             }
-        }
 
+            if(checkNotes && string.IsNullOrWhiteSpace(action.Notes) ) 
+            {
+                return (
+                    flowControl: false,
+                    value: ApiResponse<string>.Fail("Notes are required for damage records.")
+                );
+            }
+        }
         return (flowControl: true, value: null);
     }
 

@@ -34,4 +34,21 @@ public class InventoryActions : ControllerBase
         var results = await _inventoryActionService.GetSalesAsync(filters);
         return StatusCode(results.Code, results);
     }
+
+    [Authorize]
+    [HttpPost("CreateDamage")]
+    public async Task<IActionResult> CreateDamage([FromBody] AddDamageDto dto)
+    {
+        var result = await _inventoryActionService.CreateDamageAsync(dto);
+        
+        return StatusCode(result.Code, result);
+    }
+
+    [Authorize]
+    [HttpPost("GetDamage")]
+    public async Task<IActionResult> GetDamage([FromBody] DamageFilters filters)
+    {
+        var results = await _inventoryActionService.GetDamagesAsync(filters);
+        return StatusCode(results.Code, results);
+    }
 }

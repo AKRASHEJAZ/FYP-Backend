@@ -73,3 +73,25 @@ public class SaleDto
     public IList<InventoryActionDto> Actions { get; set; } = new List<InventoryActionDto>();
 }
 
+public class DamageDto
+{
+    public DamageDto() { }
+    public DamageDto(Damage d, IList<InventoryAction> i)
+    {
+        this.Id = d.Id;
+        this.DamageDate = d.DamageDate;
+        if (d.CreatedByNavigation != null)
+        {
+            this.CreatedBy = new UserDto(d.CreatedByNavigation);
+        }
+        if (i != null)
+        {
+            this.Actions = i.Select(a => new InventoryActionDto(a)).ToList();
+        }
+    }
+    public int Id { get; set; }
+    public DateTime DamageDate { get; set; }
+    //Navigation Properties
+    public UserDto CreatedBy { get; set; } = null!;
+    public IList<InventoryActionDto> Actions { get; set; } = new List<InventoryActionDto>();
+}

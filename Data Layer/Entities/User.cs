@@ -28,6 +28,9 @@ public partial class User
     public bool IsActive { get; set; }
 
     [InverseProperty("CreatedByNavigation")]
+    public virtual ICollection<Damage> Damages { get; set; } = new List<Damage>();
+
+    [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<InventoryAction> InventoryActions { get; set; } = new List<InventoryAction>();
 
     [ForeignKey("RoleId")]

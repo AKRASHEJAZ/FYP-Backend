@@ -7,4 +7,5 @@ public class InventoryActionFilters : Pagination
     public bool includeBatch { get; set; }
 
     public int batchId { get; set; }
+    public int productId { get; set; }
 }

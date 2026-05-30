@@ -226,3 +226,18 @@ CREATE TABLE InventoryActions
     FOREIGN KEY (CreatedBy)
         REFERENCES Users(Id)
 );
+
+--==================================
+-- Damages Table
+--==================================
+
+CREATE TABLE Damages
+(
+    Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    Damage_Date DATETIME2 NOT NULL,
+    CreatedBy INT NOT NULL,
+
+    CONSTRAINT FK_Damages_Users_CreatedBy
+        FOREIGN KEY (CreatedBy)
+        REFERENCES Users(Id)
+);

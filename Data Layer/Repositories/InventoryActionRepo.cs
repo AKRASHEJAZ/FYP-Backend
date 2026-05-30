@@ -19,6 +19,42 @@ public class InventoryActionRepo : IInventoryActionRepository
         _context = context;
         _batchRepo = batchRepo;
     }
+
+    // Inventory Actions
+    public async Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters)
+    {
+        var query = _context.InventoryActions.AsQueryable();
+
+        if (filters.referenceId > 0)
+        {
+            query = query.Where(a => a.ReferenceId == filters.referenceId);
+        }
+
+        if (filters.batchId > 0)
+        {
+            query = query.Where(a => a.InventoryBatchId == filters.batchId);
+        }
+
+        if (filters.includeBatch)
+        {
+            query = query.Include(a => a.InventoryBatch).
+                          ThenInclude(a => a.Product).
+                          ThenInclude(p => p.Unit).
+                          Include(a => a.InventoryBatch).
+                          ThenInclude(a => a.Product).
+                          ThenInclude(p => p.Category);
+
+            if(filters.productId > 0)
+            {
+                query = query.Where(a => a.InventoryBatch.Product.Id == filters.productId);
+            }
+        }
+
+        return await query.ToListAsync();
+    }
+
+
+    //Sales
     public async Task CreateSaleAsync(Sale newSale, IList<InventoryAction> inventoryActions)
     {
         using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -26,21 +62,7 @@ public class InventoryActionRepo : IInventoryActionRepository
         try
         {
 
-            //VALIDATE SALE 
-            
-            foreach (var action in inventoryActions)
-            {
-                var batchStock = await this.GetBatchStockAsync(action.InventoryBatchId);
-                if (batchStock == null || batchStock.BatchId <= 0)
-                {
-                    throw new InvalidOperationException($"Batch with ID {action.InventoryBatchId} not found.");
-                }
-                var availableStock = batchStock.Quantity - batchStock.Sold - batchStock.Damaged + batchStock.Returned;
-                if (action.Quantity > availableStock)
-                {
-                    throw new InvalidOperationException($"Insufficient stock for Batch ID {action.InventoryBatchId}. Available: {availableStock}, Requested: {action.Quantity}");
-                }
-            }
+            await validateInventoryActions(inventoryActions);
 
             _context.Sales.Add(newSale);
 
@@ -113,33 +135,77 @@ public class InventoryActionRepo : IInventoryActionRepository
         };
     }
 
-    public async Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters)
+    // Damages
+    public async Task CreateDamageAsync(Damage newDamage, IList<InventoryAction> inventoryActions)
     {
-        var query = _context.InventoryActions.AsQueryable();
+        using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
-        if(filters.referenceId > 0)
+        try
         {
-            query = query.Where(a => a.ReferenceId == filters.referenceId);
+            await validateInventoryActions(inventoryActions);
+
+            _context.Damages.Add(newDamage);
+
+            await _context.SaveChangesAsync();
+
+            foreach (var action in inventoryActions)
+            {
+                if(string.IsNullOrEmpty(action.Notes))
+                {
+                    throw new InvalidDataException("Notes are required for damage actions.");
+                }
+
+                action.ReferenceId = newDamage.Id;
+                action.ReferenceType = InventoryReferenceType.Damage;
+                action.ActionType = InventoryActionType.Damage;
+            }
+
+            _context.InventoryActions.AddRange(inventoryActions);
+
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
         }
 
-        if(filters.batchId > 0)
+        catch (InvalidOperationException)
         {
-            query = query.Where(a => a.InventoryBatchId == filters.batchId);
+            await transaction.RollbackAsync();
+            throw;
         }
 
-        if(filters.includeBatch)
+        catch
         {
-            query = query.Include(a => a.InventoryBatch).
-                          ThenInclude(a => a.Product).
-                          ThenInclude(p => p.Unit).
-                          Include(a => a.InventoryBatch).
-                          ThenInclude(a => a.Product).
-                          ThenInclude(p => p.Category);
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+ 
+    public async Task<PaginatedResult<Damage>> GetAllDamageAsync(DamageFilters filters)
+    {
+        var query = _context.Damages.AsQueryable();
+
+        if (filters.Id > 0)
+        {
+            query = query.Where(d => d.Id == filters.Id);
         }
 
-        return await query.ToListAsync();
+        var totalItems = await query.CountAsync();
+
+        var items = await query
+            .Skip((filters.Page - 1) * filters.PageSize)
+            .Take(filters.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Damage>
+        {
+            Items = items,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
     }
 
+    //helpers
     private async Task<InventoryBatchStock> GetBatchStockAsync(int batchId)
     {
         if (batchId <= 0)
@@ -194,4 +260,22 @@ public class InventoryActionRepo : IInventoryActionRepository
             Returned = returns
         };
     }
+
+    private async Task validateInventoryActions(IList<InventoryAction> inventoryActions)
+    {
+        foreach (var action in inventoryActions)
+        {
+            var batchStock = await this.GetBatchStockAsync(action.InventoryBatchId);
+            if (batchStock == null || batchStock.BatchId <= 0)
+            {
+                throw new InvalidOperationException($"Batch with ID {action.InventoryBatchId} not found.");
+            }
+            var availableStock = batchStock.Quantity - batchStock.Sold - batchStock.Damaged + batchStock.Returned;
+            if (action.Quantity > availableStock)
+            {
+                throw new InvalidOperationException($"Insufficient stock for Batch ID {action.InventoryBatchId}. Available: {availableStock}, Requested: {action.Quantity}");
+            }
+        }
+    }
+
 }
