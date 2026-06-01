@@ -10,4 +10,7 @@ public interface IInventoryActionRepository
     Task CreateSaleAsync(Sale newSale, IList<InventoryAction> inventoryActions);
     Task<PaginatedResult<Sale>> GetAllSaleAsync(SaleFilters filters);
     Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters);
+    Task CreateDamageAsync(Damage newDamage, IList<InventoryAction> inventoryActions);
+    Task<PaginatedResult<Damage>> GetAllDamageAsync(DamageFilters filters);
+
 }

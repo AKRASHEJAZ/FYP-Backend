@@ -20,6 +20,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Customer> Customers { get; set; }
 
+    public virtual DbSet<Damage> Damages { get; set; }
+
     public virtual DbSet<InventoryAction> InventoryActions { get; set; }
 
     public virtual DbSet<InventoryBatch> InventoryBatches { get; set; }
@@ -50,6 +52,13 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07CB3DEDB2");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<Damage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Damages__3214EC0713991079");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Damages).OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<InventoryAction>(entity =>

@@ -8,7 +8,7 @@ namespace API_Layer.Controllers;
 
 [ApiController]
 [Route("api/unit")]
-public class UnitController : Controller
+public class UnitController : ControllerBase
 {
     private readonly UnitService _service;
 

@@ -14,3 +14,8 @@ public class AddSaleDto
 
     public IList<AddInventoryActionDto> InventoryActions { get; set; } = new List<AddInventoryActionDto>();
 }
+
+public class AddDamageDto
+{
+    public IList<AddInventoryActionDto> InventoryActions { get; set; } = new List<AddInventoryActionDto>();
+}

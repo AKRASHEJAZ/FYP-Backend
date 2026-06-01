@@ -18,7 +18,7 @@ public class InventoryActions : ControllerBase
         _inventoryActionService = inventoryActionService;
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin, Cashier")]
     [HttpPost("CreateSale")]
     public async Task<IActionResult> CreateSale([FromBody] AddSaleDto dto)
     {
@@ -32,6 +32,23 @@ public class InventoryActions : ControllerBase
     public async Task<IActionResult> GetSale([FromBody] SaleFilters filters)
     {
         var results = await _inventoryActionService.GetSalesAsync(filters);
+        return StatusCode(results.Code, results);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("CreateDamage")]
+    public async Task<IActionResult> CreateDamage([FromBody] AddDamageDto dto)
+    {
+        var result = await _inventoryActionService.CreateDamageAsync(dto);
+        
+        return StatusCode(result.Code, result);
+    }
+
+    [Authorize]
+    [HttpPost("GetDamage")]
+    public async Task<IActionResult> GetDamage([FromBody] DamageFilters filters)
+    {
+        var results = await _inventoryActionService.GetDamagesAsync(filters);
         return StatusCode(results.Code, results);
     }
 }
