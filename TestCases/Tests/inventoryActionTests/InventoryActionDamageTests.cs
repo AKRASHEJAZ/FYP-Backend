@@ -106,6 +106,159 @@ public class InventoryActionDamageTests
     }
 
     [Fact]
+    public async Task Damage_Create_With_Invalid_Batch_Returns_Validation_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var seeder = scope.ServiceProvider.GetRequiredService<AuthUserSeeder>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            seeder.SeedAdmin(scope);
+
+            var response = await actionService.CreateDamageAsync(new AddDamageDto
+            {
+                InventoryActions = new List<AddInventoryActionDto>
+                {
+                    new()
+                    {
+                        InventoryBatchId = 99999,
+                        Quantity = 1,
+                        Notes = "Missing batch"
+                    }
+                }
+            });
+
+            Assert.Equal(400, response.Code);
+            Assert.Equal("Invalid Batch Id Entered", response.Message);
+            Assert.Empty(db.Damages);
+            Assert.Empty(db.InventoryActions);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
+    public async Task Damage_Create_With_Non_Positive_Quantity_Returns_Validation_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var seeder = scope.ServiceProvider.GetRequiredService<AuthUserSeeder>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            seeder.SeedAdmin(scope);
+            var batch = await SeedBatchAsync(db, quantity: 10);
+
+            var response = await actionService.CreateDamageAsync(new AddDamageDto
+            {
+                InventoryActions = new List<AddInventoryActionDto>
+                {
+                    new()
+                    {
+                        InventoryBatchId = batch.Id,
+                        Quantity = 0,
+                        Notes = "Zero quantity"
+                    }
+                }
+            });
+
+            Assert.Equal(400, response.Code);
+            Assert.Equal("Quantity must be greater than zero", response.Message);
+            Assert.Empty(db.Damages);
+            Assert.Empty(db.InventoryActions);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
+    public async Task Damage_Create_Insufficient_Stock_Returns_Error_And_Does_Not_Persist()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var seeder = scope.ServiceProvider.GetRequiredService<AuthUserSeeder>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            seeder.SeedAdmin(scope);
+            var batch = await SeedBatchAsync(db, quantity: 1);
+
+            var response = await actionService.CreateDamageAsync(new AddDamageDto
+            {
+                InventoryActions = new List<AddInventoryActionDto>
+                {
+                    new()
+                    {
+                        InventoryBatchId = batch.Id,
+                        Quantity = 2,
+                        Notes = "Too many damaged items"
+                    }
+                }
+            });
+
+            Assert.Equal(400, response.Code);
+            Assert.Contains("Insufficient stock", response.Message);
+            Assert.Empty(db.Damages);
+            Assert.Empty(db.InventoryActions);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
+    public async Task Damage_Create_Without_Authenticated_User_Returns_Unauthorized()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            var batch = await SeedBatchAsync(db, quantity: 10);
+
+            var response = await actionService.CreateDamageAsync(new AddDamageDto
+            {
+                InventoryActions = new List<AddInventoryActionDto>
+                {
+                    new()
+                    {
+                        InventoryBatchId = batch.Id,
+                        Quantity = 1,
+                        Notes = "No auth context"
+                    }
+                }
+            });
+
+            Assert.Equal(401, response.Code);
+            Assert.Equal("Unauthorized", response.Message);
+            Assert.Empty(db.Damages);
+            Assert.Empty(db.InventoryActions);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
     public async Task GetDamages_Returns_Created_Damage_With_Actions()
     {
         var provider = TestServices.Create();
@@ -148,6 +301,28 @@ public class InventoryActionDamageTests
             Assert.Equal("Expired item", action.Notes);
             Assert.NotNull(action.InventoryBatch);
             Assert.Equal(batch.BatchCode, action.InventoryBatch.BatchCode);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
+    public async Task GetDamages_When_No_Damages_Returns_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            var response = await actionService.GetDamagesAsync(new DamageFilters());
+
+            Assert.Equal(400, response.Code);
+            Assert.Equal("No damage record found", response.Message);
         }
         finally
         {

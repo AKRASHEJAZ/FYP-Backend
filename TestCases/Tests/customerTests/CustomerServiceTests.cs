@@ -101,4 +101,26 @@ public class CustomerServiceTests
             db.Database.EnsureDeleted();
         }
     }
+
+    [Fact]
+    public async Task Customer_GetCustomers_When_No_Customers_Returns_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var customerService = scope.ServiceProvider.GetRequiredService<CustomerService>();
+
+        try
+        {
+            var response = await customerService.GetCustomersAsync(new CustomerFilters());
+
+            Assert.Equal(400, response.Code);
+            Assert.Equal("No customers found.", response.Message);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
 }

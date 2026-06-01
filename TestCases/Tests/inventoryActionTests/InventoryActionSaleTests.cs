@@ -220,6 +220,44 @@ public class InventoryActionSaleTests
     }
 
     [Fact]
+    public async Task Sale_Create_Without_Authenticated_User_Returns_Unauthorized()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            var customer = await SeedCustomerAsync(db);
+            var batch = await SeedBatchAsync(db, quantity: 10);
+
+            var response = await actionService.CreateSaleAsync(new AddSaleDto
+            {
+                CustomerId = customer.Id,
+                InventoryActions = new List<AddInventoryActionDto>
+                {
+                    new()
+                    {
+                        InventoryBatchId = batch.Id,
+                        Quantity = 1
+                    }
+                }
+            });
+
+            Assert.Equal(401, response.Code);
+            Assert.Equal("Unauthorized", response.Message);
+            Assert.Empty(db.Sales);
+            Assert.Empty(db.InventoryActions);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
     public async Task GetSales_Returns_Created_Sale_With_Actions()
     {
         var provider = TestServices.Create();
@@ -268,6 +306,28 @@ public class InventoryActionSaleTests
             Assert.Equal(2, action.Quantity);
             Assert.NotNull(action.InventoryBatch);
             Assert.Equal(batch.BatchCode, action.InventoryBatch.BatchCode);
+        }
+        finally
+        {
+            db.Database.EnsureDeleted();
+        }
+    }
+
+    [Fact]
+    public async Task GetSales_When_No_Sales_Returns_Error()
+    {
+        var provider = TestServices.Create();
+        using var scope = provider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var actionService = scope.ServiceProvider.GetRequiredService<InventoryActionService>();
+
+        try
+        {
+            var response = await actionService.GetSalesAsync(new SaleFilters());
+
+            Assert.Equal(400, response.Code);
+            Assert.Equal("No sale found", response.Message);
         }
         finally
         {
