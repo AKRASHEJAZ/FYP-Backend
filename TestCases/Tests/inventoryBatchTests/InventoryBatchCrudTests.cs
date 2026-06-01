@@ -41,7 +41,7 @@ public class InventoryBatchCrudTests
             await db.SaveChangesAsync();
 
             var mfgDate = new DateOnly(2025, 6, 1);
-            var expiryDate = new DateOnly(2026, 6, 1);
+            var expiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
 
             // Create
             var createResponse = await batchService.AddInventoryBatchAsync(new AddInventoryBatchDto

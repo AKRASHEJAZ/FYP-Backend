@@ -4,6 +4,7 @@ using Data_Layer.Data;
 using Data_Layer.Interfaces;
 using Data_Layer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using TestCases.Common.Seeders;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ public static class TestServices
         var config = new ConfigurationBuilder()
         .AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Jwt:Key"] = "test-secret-key",
+            ["Jwt:Key"] = "test-secret-key-for-unit-tests-must-be-long-enough",
             ["Jwt:Issuer"] = "test",
             ["Jwt:Audience"] = "test"
         })
@@ -28,13 +29,17 @@ public static class TestServices
 
         services.AddSingleton<IConfiguration>(config);
         services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+            options
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .ConfigureWarnings(warnings =>
+                    warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepo>();
         services.AddScoped<IProductRepository, ProductRepo>();
         services.AddScoped<IInventoryBatchRepository, InventoryBatchRepo>();
         services.AddScoped<IInventoryActionRepository, InventoryActionRepo>();
+        services.AddScoped<ICustomerRepository, CustomerRepo>();
 
         // Services
         services.AddScoped<UserService>();
@@ -45,6 +50,7 @@ public static class TestServices
         services.AddScoped<CategoryService>();
         services.AddScoped<InventoryBatchService>();
         services.AddScoped<InventoryActionService>();
+        services.AddScoped<CustomerService>();
 
         // Seeder
         services.AddScoped<AuthUserSeeder>();
