@@ -12,5 +12,6 @@ public interface IInventoryActionRepository
     Task<IList<InventoryAction>> GetInventoryActionsAsync(InventoryActionFilters filters);
     Task CreateDamageAsync(Damage newDamage, IList<InventoryAction> inventoryActions);
     Task<PaginatedResult<Damage>> GetAllDamageAsync(DamageFilters filters);
-
+    Task CreateReturnAsync(Return newReturn, IList<InventoryAction> inventoryActions);
+    Task<PaginatedResult<Return>> GetAllReturnAsync(ReturnFilters filters);
 }

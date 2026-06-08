@@ -28,5 +28,8 @@ public partial class Customer
     public DateTime CreatedAt { get; set; }
 
     [InverseProperty("Customer")]
+    public virtual ICollection<Return> Returns { get; set; } = new List<Return>();
+
+    [InverseProperty("Customer")]
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 }

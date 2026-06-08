@@ -51,4 +51,22 @@ public class InventoryActions : ControllerBase
         var results = await _inventoryActionService.GetDamagesAsync(filters);
         return StatusCode(results.Code, results);
     }
+
+    [Authorize]
+    [HttpPost("CreateReturn")]
+    public async Task<IActionResult> CreateReturn([FromBody] AddReturnDto dto)
+    {
+        var result = await _inventoryActionService.CreateReturnAsync(dto);
+        
+        return StatusCode(result.Code, result);
+    }
+
+    [Authorize]
+    [HttpPost("GetReturn")]
+    public async Task<IActionResult> GetReturn([FromBody] ReturnFilters filters)
+    {
+        var result = await _inventoryActionService.GetReturnsAsync(filters);
+
+        return StatusCode(result.Code, result);
+    }
 }

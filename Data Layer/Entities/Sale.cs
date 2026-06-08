@@ -27,4 +27,7 @@ public partial class Sale
     [ForeignKey("CustomerId")]
     [InverseProperty("Sales")]
     public virtual Customer? Customer { get; set; }
+
+    [InverseProperty("Sale")]
+    public virtual ICollection<Return> Returns { get; set; } = new List<Return>();
 }

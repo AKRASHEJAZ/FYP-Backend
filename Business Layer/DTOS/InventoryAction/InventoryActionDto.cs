@@ -95,3 +95,30 @@ public class DamageDto
     public UserDto CreatedBy { get; set; } = null!;
     public IList<InventoryActionDto> Actions { get; set; } = new List<InventoryActionDto>();
 }
+
+public class ReturnDto
+{
+    public ReturnDto() { }
+
+    public ReturnDto(Return r, IList<InventoryAction> i)
+    {
+        this.Id = r.Id;
+        this.SaleId = r.SaleId;
+        this.CustomerId = r.CustomerId;
+        this.ReturnDate = r.ReturnDate;
+        this.Reason = r.Reason;
+
+        if(i != null)
+        {
+            this.Actions = i.Select(a => new InventoryActionDto(a)).ToList();
+        }
+    }
+
+    public int Id { get; set; }
+    public int SaleId { get; set; }
+    public int CustomerId { get; set; }
+    public DateTime ReturnDate { get; set; }
+    public string? Reason { get; set; }
+    public IList<InventoryActionDto> Actions { get; set; } = new List<InventoryActionDto>();
+
+}
