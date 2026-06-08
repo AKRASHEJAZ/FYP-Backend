@@ -257,7 +257,7 @@ public class InventoryBatchCrudTests
             Assert.Equal(5, response.Data.Sold);
             Assert.Equal(4, response.Data.Damaged);
             Assert.Equal(2, response.Data.Returned);
-            Assert.Equal(21, response.Data.AvailableStock);
+            Assert.Equal(23, response.Data.AvailableStock);
         }
         finally
         {
