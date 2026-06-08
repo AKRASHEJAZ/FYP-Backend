@@ -28,6 +28,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
+    public virtual DbSet<Return> Returns { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Sale> Sales { get; set; }
@@ -103,6 +105,25 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Unit).WithMany(p => p.Products)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Products_Unit");
+        });
+
+        modelBuilder.Entity<Return>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Returns__3214EC07B0713014");
+
+            entity.Property(e => e.ReturnDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Returns)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Returns_Users");
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.Returns)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Returns_Customers");
+
+            entity.HasOne(d => d.Sale).WithMany(p => p.Returns)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Returns_Sales");
         });
 
         modelBuilder.Entity<Role>(entity =>

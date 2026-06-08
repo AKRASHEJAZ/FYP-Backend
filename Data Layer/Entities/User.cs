@@ -33,6 +33,9 @@ public partial class User
     [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<InventoryAction> InventoryActions { get; set; } = new List<InventoryAction>();
 
+    [InverseProperty("CreatedByNavigation")]
+    public virtual ICollection<Return> Returns { get; set; } = new List<Return>();
+
     [ForeignKey("RoleId")]
     [InverseProperty("Users")]
     public virtual Role Role { get; set; } = null!;

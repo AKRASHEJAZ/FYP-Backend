@@ -241,3 +241,37 @@ CREATE TABLE Damages
         FOREIGN KEY (CreatedBy)
         REFERENCES Users(Id)
 );
+
+--==================================
+-- Returns Table
+--==================================
+
+CREATE TABLE Returns
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+
+    Sale_Id INT NOT NULL,
+    Customer_Id INT NOT NULL,
+
+    Return_Date DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CreatedBy INT NOT NULL,
+
+    Reason NVARCHAR(250),
+
+    -- Foreign Keys
+    CONSTRAINT FK_Returns_Sales
+        FOREIGN KEY (Sale_Id)
+        REFERENCES Sales(Id)
+        ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Returns_Customers
+        FOREIGN KEY (Customer_Id)
+        REFERENCES Customers(Id)
+        ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Returns_Users
+        FOREIGN KEY (CreatedBy)
+        REFERENCES Users(Id)
+        ON DELETE NO ACTION
+);

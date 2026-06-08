@@ -99,7 +99,9 @@ public class InventoryActionRepo : IInventoryActionRepository
     {
         var query = _context.Sales.AsQueryable();
 
-        if(filters.Id > 0 )
+        query = query.Include(s => s.Returns);
+
+        if (filters.Id > 0 )
         {
             query = query.Where(s => s.Id == filters.Id);
         }
@@ -205,6 +207,73 @@ public class InventoryActionRepo : IInventoryActionRepository
         };
     }
 
+    // Returns
+    public async Task CreateReturnAsync(Return newReturn, IList<InventoryAction> inventoryActions)
+    {
+       var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        try
+        {
+            await validateInventoryActions(inventoryActions, false);
+            _context.Returns.Add(newReturn);
+            await _context.SaveChangesAsync();
+
+            foreach (var action in inventoryActions)
+            {
+                action.ReferenceId = newReturn.Id;
+                action.ReferenceType = InventoryReferenceType.Return;
+                action.ActionType = InventoryActionType.Return;
+            }
+            _context.InventoryActions.AddRange(inventoryActions);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (InvalidOperationException)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<PaginatedResult<Return>> GetAllReturnAsync(ReturnFilters filters)
+    {
+        var query = _context.Returns.AsQueryable();
+
+        if(filters.Id > 0)
+        {
+            query = query.Where(r => r.Id == filters.Id);
+        }
+
+        if(filters.CustomerId > 0)
+        {
+            query = query.Where(r => r.CustomerId == filters.CustomerId);
+        }
+
+        if(filters.IsIncludeSale == true)
+        {
+            query = query.Include(s => s.Sale);
+        }
+
+        var totalItems = await query.CountAsync();
+
+        var items = await query
+            .Skip((filters.Page - 1) * filters.PageSize)
+            .Take(filters.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Return>
+        {
+            Items = items,
+            Page = filters.Page,
+            PageSize = filters.PageSize,
+            TotalItems = totalItems
+        };
+    }
+
     //helpers
     private async Task<InventoryBatchStock> GetBatchStockAsync(int batchId)
     {
@@ -261,7 +330,7 @@ public class InventoryActionRepo : IInventoryActionRepository
         };
     }
 
-    private async Task validateInventoryActions(IList<InventoryAction> inventoryActions)
+    private async Task validateInventoryActions(IList<InventoryAction> inventoryActions, bool checkStock = true)
     {
         foreach (var action in inventoryActions)
         {
@@ -271,11 +340,10 @@ public class InventoryActionRepo : IInventoryActionRepository
                 throw new InvalidOperationException($"Batch with ID {action.InventoryBatchId} not found.");
             }
             var availableStock = batchStock.Quantity - batchStock.Sold - batchStock.Damaged + batchStock.Returned;
-            if (action.Quantity > availableStock)
+            if (checkStock && action.Quantity > availableStock)
             {
                 throw new InvalidOperationException($"Insufficient stock for Batch ID {action.InventoryBatchId}. Available: {availableStock}, Requested: {action.Quantity}");
             }
         }
     }
-
 }

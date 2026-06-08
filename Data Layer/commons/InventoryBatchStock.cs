@@ -7,5 +7,5 @@ public class InventoryBatchStock
     public decimal Sold { get; set; } = 0;
     public decimal Damaged { get; set; } = 0;
     public decimal Returned { get; set; } = 0;
-    public decimal AvailableStock => Quantity - Sold - Damaged;
+    public decimal AvailableStock => Quantity - Sold - Damaged + Returned;
 }

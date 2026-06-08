@@ -19,3 +19,10 @@ public class AddDamageDto
 {
     public IList<AddInventoryActionDto> InventoryActions { get; set; } = new List<AddInventoryActionDto>();
 }
+
+public class AddReturnDto
+{
+    public int SaleId { get; set; }
+    public string? Reason { get; set; }
+    public IList<AddInventoryActionDto> InventoryActions { get; set; } = new List<AddInventoryActionDto>();
+}
