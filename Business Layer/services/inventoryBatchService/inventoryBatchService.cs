@@ -191,6 +191,74 @@ public class InventoryBatchService
         });
     }
 
+    public async Task<ApiResponse<IList<StockInfoDto>>> GetProductStock(ProductFilters filters)
+    {
+        try
+        {
+            var data = await _productRepository.GetAllProductsAsync(filters);
+            
+            if(data.Items == null || data.Items.Count == 0)
+            {
+                return ApiResponse<IList<StockInfoDto>>.Fail("No Products Found");
+            }
+
+            var products = data.Items;
+
+            var batchData = await _repository.GetAllInventoryBatchesAsync(new InventoryBatchFilters
+            {
+                ProductId = products.Select(p => p.Id).Distinct().ToList()
+            });
+
+            if (batchData.Items == null || batchData.Items.Count == 0)
+            {
+                return ApiResponse<IList<StockInfoDto>>.Fail("No Inventory Batches Found for the given products.");
+            }
+
+            var batches = batchData.Items;
+            var batchLookup = batches.ToLookup(b => b.ProductId);
+
+            var returnData = new List<StockInfoDto>();
+
+            foreach (var product in products)
+            {
+                var productBatches = batchLookup[product.Id];
+
+                var productStock = new StockInfoDto
+                {
+                    id = product.Id,
+                    name = product.Name,
+                    Category = product.Category?.Name,
+                    Unit = product.Unit?.Name,
+                    PurchasedAmount = 0,
+                    SoldAmount = 0,
+                    DamagedAmount = 0,
+                    ReturnedAmount = 0,
+                    AvailableStock = 0
+                };
+
+                foreach (var batch in productBatches)
+                {
+                    var stock = await this.GetBatchStockAsync(batch.Id);
+                    if (stock.Code == 200 && stock.Data != null)
+                    {
+                        productStock.PurchasedAmount += stock.Data.Quantity;
+                        productStock.SoldAmount += stock.Data.Sold;
+                        productStock.DamagedAmount += stock.Data.Damaged;
+                        productStock.ReturnedAmount += stock.Data.Returned;
+                        productStock.AvailableStock += stock.Data.Quantity - stock.Data.Sold - stock.Data.Damaged + stock.Data.Returned;
+                    }
+                }
+
+                returnData.Add(productStock);
+            }
+        
+            return ApiResponse<IList<StockInfoDto>>.Success(returnData);
+        }
+        catch(Exception ex)
+        {
+            return ApiResponse<IList<StockInfoDto>>.Fail($"Error fetching product stock: {ex.Message}");
+        }
+    }
     // Helpers
     private static (bool flowControl, ApiResponse<InventoryBatchDto> value) ValidateStockEntry(AddInventoryBatchDto newBatch, Product? product)
     {
