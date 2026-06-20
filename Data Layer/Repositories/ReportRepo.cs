@@ -105,7 +105,7 @@ public class ReportRepo : IReportRepository
             query = query.Where(ib => filters.ProductIds.Contains(ib.Product.Id));
         }
 
-        var totalCount = query.Count(); 
+        var totalCount = await query.CountAsync(); 
 
         var result = await query
             .Skip((filters.Page - 1) * filters.PageSize)

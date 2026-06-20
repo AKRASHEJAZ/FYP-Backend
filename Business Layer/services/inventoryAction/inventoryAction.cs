@@ -298,57 +298,71 @@ public class InventoryActionService
         return (flowControl: true, value: null);
     }
 
-    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateActionsAsync(IList<AddInventoryActionDto> actions, bool checkNotes = false, bool checkStock = true)
+    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateActionsAsync(
+    IList<AddInventoryActionDto> actions,
+    bool checkNotes = false,
+    bool checkStock = true)
     {
         foreach (var action in actions)
         {
-            var batch = await _batchRepo.GetInventoryBatchByIdAsync(action.InventoryBatchId);
+            var batchResult = await ValidateBatchAsync(action.InventoryBatchId);
+            if (!batchResult.flowControl)
+                return (false, batchResult.value);
 
-            if (batch == null)
+            var quantityResult = ValidateQuantity(action);
+            if (!quantityResult.flowControl)
+                return (false, quantityResult.value);
+            if (checkStock)
             {
-                return (flowControl: false, value: ApiResponse<string>.Fail("Invalid Batch Id Entered"));
+                var stockResult = await ValidateStockAsync(batchResult.batch!, action);
+                if (!stockResult.flowControl)
+                    return stockResult;
             }
 
-            if (action.Quantity <= 0)
+            if (checkNotes && string.IsNullOrWhiteSpace(action.Notes))
             {
-                return (
-                    flowControl: false,
-                    value: ApiResponse<string>.Fail("Quantity must be greater than zero")
-                );
-            }
-
-            if(checkStock)
-            {
-                var stocks = _batchService.GetBatchStockAsync(batch.Id).Result.Data;
-
-                if (stocks == null)
-                {
-                    return (
-                        flowControl: false,
-                        value: ApiResponse<string>.Fail($"Unable to retrieve stock information for batch ID {batch.Id}")
-                    );
-                }
-
-                if (stocks.AvailableStock < action.Quantity)
-                {
-                    return (
-                        flowControl: false,
-                        value: ApiResponse<string>.Fail(
-                            $"Insufficient stock for batch {batch.BatchCode} - {batch.Product?.Name ?? ""}. Available stock: {stocks.AvailableStock}"
-                        )
-                    );
-                }
-            }
-
-            if(checkNotes && string.IsNullOrWhiteSpace(action.Notes) ) 
-            {
-                return (
-                    flowControl: false,
-                    value: ApiResponse<string>.Fail("Notes are required for damage records.")
-                );
+                return (false, ApiResponse<string>.Fail("Notes are required for damage records."));
             }
         }
-        return (flowControl: true, value: null);
+
+        return (true, null);
+    }
+
+    private async Task<(bool flowControl, ApiResponse<string>? value, InventoryBatch? batch)> ValidateBatchAsync(int batchId)
+    {
+        var batch = await _batchRepo.GetInventoryBatchByIdAsync(batchId);
+
+        if (batch == null)
+            return (false, ApiResponse<string>.Fail("Invalid Batch Id Entered"), null);
+
+        return (true, null, batch);
+    }
+
+    private (bool flowControl, ApiResponse<string>? value) ValidateQuantity(AddInventoryActionDto action)
+    {
+        if (action.Quantity <= 0)
+            return (false, ApiResponse<string>.Fail("Quantity must be greater than zero"));
+
+        return (true, null);
+    }
+
+    private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateStockAsync(
+    InventoryBatch batch,
+    AddInventoryActionDto action)
+    {
+        var stocksResult = await _batchService.GetBatchStockAsync(batch.Id);
+
+        var stocks = stocksResult.Data;
+
+        if (stocks == null)
+            return (false, ApiResponse<string>.Fail($"Unable to retrieve stock information for batch ID {batch.Id}"));
+
+        if (stocks.AvailableStock < action.Quantity)
+            return (false, ApiResponse<string>.Fail(
+                $"Insufficient stock for batch {batch.BatchCode} - {batch.Product?.Name ?? ""}. Available stock: {stocks.AvailableStock}"
+            ));
+
+        return (true, null);
     }
 
     private async Task<(bool flowControl, ApiResponse<string>? value)> ValidateReturn(AddReturnDto dto)
