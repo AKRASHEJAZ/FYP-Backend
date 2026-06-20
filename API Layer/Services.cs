@@ -67,6 +67,7 @@ namespace API_Layer
             builder.Services.AddScoped<IInventoryBatchRepository, InventoryBatchRepo>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepo>();
             builder.Services.AddScoped<IInventoryActionRepository, InventoryActionRepo>();
+            builder.Services.AddScoped<IReportRepository, ReportRepo>();
 
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
@@ -77,6 +78,7 @@ namespace API_Layer
             builder.Services.AddScoped<InventoryBatchService>();
             builder.Services.AddScoped<CustomerService>();
             builder.Services.AddScoped<InventoryActionService>();
+            builder.Services.AddScoped<ReportService>();
 
             builder.Services.AddHttpContextAccessor();
         }

@@ -34,4 +34,12 @@ public class InventoryBatchController : ControllerBase
         var data = await _service.AddInventoryBatchAsync(batch);
         return StatusCode(data.Code, data);
     }
+
+    [Authorize]
+    [HttpPost("getStock")]
+    public async Task<IActionResult> GetProductStock([FromBody] ProductFilters filters)
+    {
+        var data = await _service.GetProductStock(filters);
+        return StatusCode(data.Code, data);
+    }
 }
