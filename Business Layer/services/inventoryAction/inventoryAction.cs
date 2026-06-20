@@ -338,7 +338,7 @@ public class InventoryActionService
         return (true, null, batch);
     }
 
-    private (bool flowControl, ApiResponse<string>? value) ValidateQuantity(AddInventoryActionDto action)
+    private static (bool flowControl, ApiResponse<string>? value) ValidateQuantity(AddInventoryActionDto action)
     {
         if (action.Quantity <= 0)
             return (false, ApiResponse<string>.Fail("Quantity must be greater than zero"));
